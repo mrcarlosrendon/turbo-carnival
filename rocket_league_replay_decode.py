@@ -47,11 +47,11 @@ def extract_positions(spawned_or_updated, ball_id, actor_cars):
     return positions
 
 def print_positions_csv(frame_positions):
-    print("frame, id, x, y, z, yaw, pitch, roll")
+    print("frame,id,x,y,z,yaw,pitch,roll")
     for frame, frame_pos in enumerate(frame_positions):
         for actor_pos in frame_pos:
             for actor in actor_pos:
-                print("{}, {}, {}, {}, {}, {}, {}, {}".format(frame, actor['id'], \
+                print("{},{},{},{},{},{},{},{}".format(frame, actor['id'], \
                              actor['x'], actor['y'], actor['z'], \
                              actor['yaw'], actor['pitch'], actor['roll']))
 

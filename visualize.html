@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	<meta charset=utf-8>
+	<title>Turbo Carnival</title>
+	<style>
+	 body { margin: 0; }
+	 canvas { width: 100%; height: 100% }
+	</style>
+    </head>
+    <body>
+	<script src="js/three.js"></script>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script>
+
+	 d3.csv("sample_data/A12FC5C047140DC453037F8869B38900.csv", function(error, data){
+	     draw(data);
+	 });
+
+	 var frame = 0;
+	 var objects = {};
+	 var geometries = {};
+
+	 var scene = new THREE.Scene();
+	 var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 3000 );	 
+	 var renderer = new THREE.WebGLRenderer();
+
+	 var frame_data;
+	 
+	 function draw(data) {
+	     frame_data = data;
+	     
+	     renderer.setSize( window.innerWidth, window.innerHeight );
+	     document.body.appendChild( renderer.domElement );
+
+	     var plane = new THREE.Mesh(new THREE.PlaneGeometry(4078*2, 5972*2),
+					new THREE.MeshBasicMaterial( { color: 0x00ff00 }));
+	     scene.add( plane );
+	     
+	     
+	     for(item in data) {
+		 if (data[item].frame != 0) {
+		     break;
+		 }
+		 var line = data[item];
+		 objects[line.id] = data[item];
+	     }
+	     for(actor in objects) {
+
+		 if (actor == 'ball') {
+		     var sphere = new THREE.Mesh(new THREE.SphereGeometry( 100, 32, 32 ),
+						 new THREE.MeshBasicMaterial( { color: 0x0000ff }) );
+		     geometries[actor] = sphere; 
+		     scene.add( sphere );
+		 }
+		 else {
+		     var geometry = new THREE.BoxGeometry( 200, 100, 100 );
+		     var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+		     var cube = new THREE.Mesh( geometry, material );
+		     geometries[actor] = cube;
+		     scene.add( cube );
+		 }
+	     }	     
+	     
+	     camera.position.z = 2000;
+     
+	     render();
+	 }
+	 
+	 function render() {
+	     requestAnimationFrame( render );
+
+	     for(item in frame_data) {
+		 // Yes I know, super inefficent
+		 if (frame_data[item].frame == frame) {
+		     datum = frame_data[item];
+		     obj = geometries[datum.id];
+		     obj.position.x = datum.x;
+		     obj.position.y = datum.y;
+		     obj.position.z = datum.z;
+
+		     rotation = obj.rotation;
+
+		     if (frame == 0) {
+			 // trying to figure out how rotation works
+			 console.log(rotation, datum);
+			 obj.rotateX(datum.pitch);
+		     }
+
+		     if (datum.id === 'ball') {
+			 camera.position.x = datum.x;
+			 camera.position.y = datum.y;
+		     }     
+		 }
+	     }
+			     
+	     renderer.render( scene, camera );
+	     frame++;
+	 }
+	</script>
+    </body>
+</html>

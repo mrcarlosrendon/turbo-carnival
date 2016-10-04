@@ -22,7 +22,7 @@
 	 var geometries = {};
 
 	 var scene = new THREE.Scene();
-	 var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 3000 );	 
+	 var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 6000 );	 
 	 var renderer = new THREE.WebGLRenderer();
 
 	 var point_light = new THREE.PointLight( 0xffffff, 1, 9000 );
@@ -79,7 +79,7 @@
 		 }
 	     }	     
 	     
-	     camera.position.z = 2000;
+	     camera.position.z = 6000;
 	     camera.rotateZ(.5*Math.PI);
      
 	     render();
@@ -99,16 +99,19 @@
 
 		     rotation = obj.rotation;
 
+
+		     // Still having issues with rotation
+		     //obj.rotateX(datum.yaw*Math.PI);
+		     //obj.rotateY(datum.roll*Math.PI);
+
 		     if (frame == 0) {
-			 // trying to figure out how rotation works
-			 //console.log(rotation, datum);
-			 //obj.rotateX(datum.pitch);
+			 obj.rotateZ(datum.pitch*Math.PI); // correct on first frame
 		     }
 
-		     if (datum.id === 'ball') {
+		     if (datum.id === '6') {
 			 camera.position.x = datum.x;
 			 camera.position.y = datum.y;
-		     }     
+		     }
 		 }
 	     }
 

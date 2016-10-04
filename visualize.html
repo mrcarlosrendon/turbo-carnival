@@ -32,6 +32,16 @@
 	 var ambient_light = new THREE.AmbientLight ( 0x404040 );
 	 scene.add( ambient_light );
 
+	 var text_overlay = document.createElement('div');
+	 text_overlay.style.position = 'absolute';
+	 text_overlay.style.color = 'white';
+
+	 var frame_counter = document.createElement('h1');
+	 frame_counter.innerHTML = "Frame: ";
+	 text_overlay.appendChild(frame_counter);
+	 
+	 document.body.appendChild(text_overlay);
+	 
 	 var frame_data;
 	 
 	 function draw(data) {
@@ -40,7 +50,7 @@
 	     renderer.setSize( window.innerWidth, window.innerHeight );
 	     document.body.appendChild( renderer.domElement );
 
-	     var plane = new THREE.Mesh(new THREE.PlaneGeometry(4078*2, 5972*2),
+	     var plane = new THREE.Mesh(new THREE.PlaneGeometry(4005*2, 5213*2),
 					new THREE.MeshLambertMaterial( { color: 0x00ff00 }));
 	     scene.add( plane );
 	     
@@ -61,7 +71,7 @@
 		     scene.add( sphere );
 		 }
 		 else {
-		     var geometry = new THREE.BoxGeometry( 200, 100, 100 );
+		     var geometry = new THREE.BoxGeometry( 200, 100, 50 );
 		     var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
 		     var cube = new THREE.Mesh( geometry, material );
 		     geometries[actor] = cube;
@@ -91,8 +101,8 @@
 
 		     if (frame == 0) {
 			 // trying to figure out how rotation works
-			 console.log(rotation, datum);
-			 obj.rotateX(datum.pitch);
+			 //console.log(rotation, datum);
+			 //obj.rotateX(datum.pitch);
 		     }
 
 		     if (datum.id === 'ball') {
@@ -100,6 +110,10 @@
 			 camera.position.y = datum.y;
 		     }     
 		 }
+	     }
+
+	     if (frame % 30 == 0) {
+		 frame_counter.innerHTML = "Frame: " + frame;
 	     }
 			     
 	     renderer.render( scene, camera );

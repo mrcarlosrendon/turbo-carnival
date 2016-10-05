@@ -13,7 +13,7 @@
 	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<script>
 
-	 d3.csv("sample_data/A12FC5C047140DC453037F8869B38900.csv", function(error, data){
+	 d3.csv("sample_data/demo.csv", function(error, data){
 	     draw(data);
 	 });
 
@@ -116,7 +116,7 @@
 		     obj.position.set(datum.x, datum.y, datum.z);
 		     obj.rotation.set(datum.yaw*Math.PI, datum.roll*Math.PI, datum.pitch*Math.PI);
 
-		     if (datum.id === '6') {
+		     if (datum.id === 'ball') {
 			 camera.position.x = datum.x;
 			 camera.position.y = datum.y;
 		     }

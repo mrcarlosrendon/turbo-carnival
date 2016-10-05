@@ -43,6 +43,26 @@
 	 document.body.appendChild(text_overlay);
 	 
 	 var frame_data;
+
+	 var frame_by_frame_mode = false;
+	 
+	 document.onkeydown = checkKey;
+	 function checkKey(e) {
+	     if (e.keyCode === 37) {
+		 // left arrow
+		 frame_by_frame_mode = true;
+		 frame--;
+	     }
+	     else if (e.keyCode === 39) {
+		 // right arrow
+		 frame_by_frame_mode = true;
+		 frame++;
+	     }
+	     else if (e.keyCode === 32) {
+		 // space 
+		 frame_by_frame_mode = false;		 
+	     }
+	 }
 	 
 	 function draw(data) {
 	     frame_data = data;
@@ -93,20 +113,8 @@
 		 if (frame_data[item].frame == frame) {
 		     datum = frame_data[item];
 		     obj = geometries[datum.id];
-		     obj.position.x = datum.x;
-		     obj.position.y = datum.y;
-		     obj.position.z = datum.z;
-
-		     rotation = obj.rotation;
-
-
-		     // Still having issues with rotation
-		     //obj.rotateX(datum.yaw*Math.PI);
-		     //obj.rotateY(datum.roll*Math.PI);
-
-		     if (frame == 0) {
-			 obj.rotateZ(datum.pitch*Math.PI); // correct on first frame
-		     }
+		     obj.position.set(datum.x, datum.y, datum.z);
+		     obj.rotation.set(datum.yaw*Math.PI, datum.roll*Math.PI, datum.pitch*Math.PI);
 
 		     if (datum.id === '6') {
 			 camera.position.x = datum.x;
@@ -115,12 +123,17 @@
 		 }
 	     }
 
-	     if (frame % 30 == 0) {
+	     if (frame_by_frame_mode) {
+		 frame_counter.innerHTML = "Frame: " + frame;
+	     }
+	     else if (frame % 30 === 0) {
 		 frame_counter.innerHTML = "Frame: " + frame;
 	     }
 			     
 	     renderer.render( scene, camera );
-	     frame++;
+	     if (!frame_by_frame_mode) {
+		 frame++;
+	     }
 	 }
 	</script>
     </body>

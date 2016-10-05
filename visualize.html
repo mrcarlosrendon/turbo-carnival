@@ -18,6 +18,7 @@
 	 });
 
 	 var frame = 0;
+	 var max_frame = 0;
 	 var objects = {};
 	 var geometries = {};
 
@@ -51,12 +52,16 @@
 	     if (e.keyCode === 37) {
 		 // left arrow
 		 frame_by_frame_mode = true;
-		 frame--;
+		 if (frame > 0) {
+		     frame--;
+		 }
 	     }
 	     else if (e.keyCode === 39) {
 		 // right arrow
 		 frame_by_frame_mode = true;
-		 frame++;
+		 if (frame < max_frame) {
+		     frame++;
+		 }
 	     }
 	     else if (e.keyCode === 32) {
 		 // space 
@@ -66,6 +71,8 @@
 	 
 	 function draw(data) {
 	     frame_data = data;
+
+	     max_frame = d3.max(data, function(d) { return parseInt(d.frame) });
 	     
 	     renderer.setSize( window.innerWidth - 5, window.innerHeight - 5);
 	     document.body.appendChild( renderer.domElement );
@@ -131,7 +138,7 @@
 	     }
 			     
 	     renderer.render( scene, camera );
-	     if (!frame_by_frame_mode) {
+	     if (!frame_by_frame_mode && frame < max_frame) {
 		 frame++;
 	     }
 	 }

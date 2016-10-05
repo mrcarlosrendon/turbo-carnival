@@ -67,7 +67,7 @@
 	 function draw(data) {
 	     frame_data = data;
 	     
-	     renderer.setSize( window.innerWidth, window.innerHeight );
+	     renderer.setSize( window.innerWidth - 5, window.innerHeight - 5);
 	     document.body.appendChild( renderer.domElement );
 
 	     var plane = new THREE.Mesh(new THREE.PlaneGeometry(4005*2, 5213*2),

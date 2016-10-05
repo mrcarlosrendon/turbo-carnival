@@ -1,5 +1,5 @@
 # turbo-carnival
-Visualizes Rocket League Replays
+Visualizes [Rocket League](http://www.rocketleaguegame.com/) Replays
 
 ## Sample usage (Windows):
 

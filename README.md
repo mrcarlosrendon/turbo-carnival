@@ -1,6 +1,8 @@
 # turbo-carnival
 Visualizes [Rocket League](http://www.rocketleaguegame.com/) Replays
 
+[Click here to watch a live demo in your browser](http://www.carlosrendon.me/turbo-carnival/visualize.html)
+
 ## Sample usage (Windows):
 
 

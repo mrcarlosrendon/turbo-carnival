@@ -33,6 +33,20 @@
 	 var ambient_light = new THREE.AmbientLight ( 0x404040 );
 	 scene.add( ambient_light );
 
+	 var plane = new THREE.Mesh(new THREE.PlaneGeometry(4030*2, 5113*2),
+				    new THREE.MeshLambertMaterial( { color: 0x00ff00 }));
+	 scene.add( plane );
+	 
+	 var goal1 = new THREE.Mesh(new THREE.BoxGeometry(1333, 1000, 200),
+				    new THREE.MeshLambertMaterial( { color: 0xffffff, wireframe: true } ));
+	 goal1.position.set(0, 5113+500, 100);
+	 scene.add(goal1);
+	 
+	 var goal2 = new THREE.Mesh(new THREE.BoxGeometry(1333, 1000, 200),
+				    new THREE.MeshLambertMaterial( { color: 0xffffff, wireframe: true } ));
+	 goal2.position.set(0, -(5113+500), 100);
+	 scene.add(goal2);
+	 
 	 var text_overlay = document.createElement('div');
 	 text_overlay.style.position = 'absolute';
 	 text_overlay.style.color = 'white';
@@ -77,12 +91,7 @@
 	     renderer.setSize( window.innerWidth - 5, window.innerHeight - 5);
 	     document.body.appendChild( renderer.domElement );
 
-	     var plane = new THREE.Mesh(new THREE.PlaneGeometry(4005*2, 5213*2),
-					new THREE.MeshLambertMaterial( { color: 0x00ff00 }));
-	     scene.add( plane );
-	     
-	     
-	     for(item in data) {
+  	     for(item in data) {
 		 if (data[item].frame != 0) {
 		     break;
 		 }

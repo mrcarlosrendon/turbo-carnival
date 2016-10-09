@@ -36,13 +36,17 @@
 	 var plane = new THREE.Mesh(new THREE.PlaneGeometry(4030*2, 5113*2),
 				    new THREE.MeshLambertMaterial( { color: 0x00ff00 }));
 	 scene.add( plane );
+
+	 var arena = new THREE.Mesh(new THREE.BoxGeometry(4030*2, 5113*2, 2000),
+				    new THREE.MeshLambertMaterial( { color: 0xaaaaaa, side: THREE.BackSide }));
+	 scene.add( arena );
 	 
-	 var goal1 = new THREE.Mesh(new THREE.BoxGeometry(1333, 1000, 200),
+	 var goal1 = new THREE.Mesh(new THREE.BoxGeometry(1633, 1400, 200),
 				    new THREE.MeshLambertMaterial( { color: 0xffffff, wireframe: true } ));
 	 goal1.position.set(0, 5113+500, 100);
 	 scene.add(goal1);
 	 
-	 var goal2 = new THREE.Mesh(new THREE.BoxGeometry(1333, 1000, 200),
+	 var goal2 = new THREE.Mesh(new THREE.BoxGeometry(1633, 1400, 200),
 				    new THREE.MeshLambertMaterial( { color: 0xffffff, wireframe: true } ));
 	 goal2.position.set(0, -(5113+500), 100);
 	 scene.add(goal2);

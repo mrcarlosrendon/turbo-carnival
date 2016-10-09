@@ -22,8 +22,11 @@
 	 var objects = {};
 	 var geometries = {};
 
+	 var watchTopOfBallMode = false;
+	 var watchBallCenterMode = true;
+
 	 var scene = new THREE.Scene();
-	 var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 6000 );	 
+	 var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 9000 );	 
 	 var renderer = new THREE.WebGLRenderer();
 
 	 var point_light = new THREE.PointLight( 0xffffff, 1, 9000 );
@@ -33,22 +36,24 @@
 	 var ambient_light = new THREE.AmbientLight ( 0x404040 );
 	 scene.add( ambient_light );
 
-	 var plane = new THREE.Mesh(new THREE.PlaneGeometry(4030*2, 5113*2),
+	 var plane = new THREE.Mesh(new THREE.PlaneGeometry(4035*2, 5113*2),
 				    new THREE.MeshLambertMaterial( { color: 0x00ff00 }));
 	 scene.add( plane );
 
-	 var arena = new THREE.Mesh(new THREE.BoxGeometry(4030*2, 5113*2, 2000),
+	 var arena = new THREE.Mesh(new THREE.BoxGeometry(4035*2, 5113*2, 4000),
 				    new THREE.MeshLambertMaterial( { color: 0xaaaaaa, side: THREE.BackSide }));
+	 // put below the ground
+	 arena.position.z = -1;
 	 scene.add( arena );
 	 
-	 var goal1 = new THREE.Mesh(new THREE.BoxGeometry(1633, 1400, 200),
+	 var goal1 = new THREE.Mesh(new THREE.BoxGeometry(1633, 1400, 500),
 				    new THREE.MeshLambertMaterial( { color: 0xffffff, wireframe: true } ));
-	 goal1.position.set(0, 5113+500, 100);
+	 goal1.position.set(0, 5113+500, 250);
 	 scene.add(goal1);
 	 
-	 var goal2 = new THREE.Mesh(new THREE.BoxGeometry(1633, 1400, 200),
+	 var goal2 = new THREE.Mesh(new THREE.BoxGeometry(1633, 1400, 500),
 				    new THREE.MeshLambertMaterial( { color: 0xffffff, wireframe: true } ));
-	 goal2.position.set(0, -(5113+500), 100);
+	 goal2.position.set(0, -(5113+500), 250);
 	 scene.add(goal2);
 	 
 	 var text_overlay = document.createElement('div');
@@ -83,8 +88,18 @@
 	     }
 	     else if (e.keyCode === 32) {
 		 // space 
-		 frame_by_frame_mode = false;		 
+		 frame_by_frame_mode = false;
 	     }
+	     else if (e.keyCode === 87) {
+		 // w
+		 watchBallCenterMode = true;
+		 watchTopOfBallMode = false;
+	     }
+	     else if (e.keyCode === 84) {
+		 // t
+		 watchTopOfBallMode = true;
+		 watchBallCenterMode = false;
+	     }		 
 	 }
 	 
 	 function draw(data) {
@@ -95,6 +110,8 @@
 	     renderer.setSize( window.innerWidth - 5, window.innerHeight - 5);
 	     document.body.appendChild( renderer.domElement );
 
+	     var ball;
+	     
   	     for(item in data) {
 		 if (data[item].frame != 0) {
 		     break;
@@ -107,7 +124,8 @@
 		 if (actor == 'ball') {
 		     var sphere = new THREE.Mesh(new THREE.SphereGeometry( 100, 32, 32 ),
 						 new THREE.MeshLambertMaterial( { color: 0x0000ff }) );
-		     geometries[actor] = sphere; 
+		     geometries[actor] = sphere;
+		     ball = sphere;
 		     scene.add( sphere );
 		 }
 		 else {
@@ -117,11 +135,10 @@
 		     geometries[actor] = cube;
 		     scene.add( cube );
 		 }
-	     }	     
-	     
-	     camera.position.z = 6000;
-	     camera.rotateZ(.5*Math.PI);
-     
+	     }
+
+	     camera.position.x = 1000;
+	     camera.position.z = 1000;
 	     render();
 	 }
 	 
@@ -137,8 +154,14 @@
 		     obj.rotation.set(datum.yaw*Math.PI, datum.roll*Math.PI, datum.pitch*Math.PI);
 
 		     if (datum.id === 'ball') {
-			 camera.position.x = datum.x;
-			 camera.position.y = datum.y;
+			 if (watchTopOfBallMode) {
+			     camera.position.set(datum.x, datum.y, 4000);
+			     camera.rotation.set(0, 0, 0);
+			 }
+			 else if (watchBallCenterMode) {
+			     camera.position.set(0, 0, 1000);
+			     camera.lookAt(obj.position);
+			 }
 		     }
 		 }
 	     }

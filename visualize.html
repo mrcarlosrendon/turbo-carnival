@@ -40,8 +40,17 @@
 				    new THREE.MeshLambertMaterial( { color: 0x00ff00 }));
 	 scene.add( plane );
 
-	 var arena = new THREE.Mesh(new THREE.BoxGeometry(4035*2, 5113*2, 4000),
-				    new THREE.MeshLambertMaterial( { color: 0xaaaaaa, side: THREE.BackSide }));
+	 var arenaGeo = new THREE.BoxGeometry(4035*2, 5113*2, 6000)
+	 var arena = new THREE.Mesh(arenaGeo,
+				    new THREE.MeshLambertMaterial( { color: 0xaaaaaa, vertexColors: THREE.FaceColors, side: THREE.BackSide }));
+
+	 var orangeSide = 0xfcca6d;
+	 var blueSide = 0x6d9ffc;
+	 arenaGeo.faces[4].color.setHex( blueSide );
+	 arenaGeo.faces[5].color.setHex( blueSide );
+	 arenaGeo.faces[6].color.setHex( orangeSide );
+	 arenaGeo.faces[7].color.setHex( orangeSide );
+	 
 	 // put below the ground
 	 arena.position.z = -1;
 	 scene.add( arena );

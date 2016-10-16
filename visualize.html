@@ -150,17 +150,18 @@
 		 if (frame_data[item].frame == frame) {
 		     datum = frame_data[item];
 		     obj = geometries[datum.id];
-		     obj.position.set(datum.x, datum.y, datum.z);
-		     obj.rotation.set(datum.yaw*Math.PI, datum.roll*Math.PI, datum.pitch*Math.PI);
-
-		     if (datum.id === 'ball') {
-			 if (watchTopOfBallMode) {
-			     camera.position.set(datum.x, datum.y, 4000);
-			     camera.rotation.set(0, 0, 0);
-			 }
-			 else if (watchBallCenterMode) {
-			     camera.position.set(0, 0, 1000);
-			     camera.lookAt(obj.position);
+		     if (obj !== undefined) {
+			 obj.position.set(datum.x, datum.y, datum.z);
+			 obj.rotation.set(datum.yaw*Math.PI, datum.roll*Math.PI, datum.pitch*Math.PI);
+			 if (datum.id === 'ball') {
+			     if (watchTopOfBallMode) {
+				 camera.position.set(datum.x, datum.y, 4000);
+				 camera.rotation.set(0, 0, 0);
+			     }
+			     else if (watchBallCenterMode) {
+				 camera.position.set(0, 0, 1000);
+				 camera.lookAt(obj.position);
+			     }
 			 }
 		     }
 		 }

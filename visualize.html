@@ -46,10 +46,10 @@
 
 	 var orangeSide = 0xfcca6d;
 	 var blueSide = 0x6d9ffc;
-	 arenaGeo.faces[4].color.setHex( blueSide );
-	 arenaGeo.faces[5].color.setHex( blueSide );
-	 arenaGeo.faces[6].color.setHex( orangeSide );
-	 arenaGeo.faces[7].color.setHex( orangeSide );
+	 arenaGeo.faces[4].color.setHex( orangeSide );
+	 arenaGeo.faces[5].color.setHex( orangeSide );
+	 arenaGeo.faces[6].color.setHex( blueSide );
+	 arenaGeo.faces[7].color.setHex( blueSide );
 	 
 	 // put below the ground
 	 arena.position.z = -1;
@@ -110,42 +110,31 @@
 		 watchBallCenterMode = false;
 	     }		 
 	 }
+
+	 function createPlayerCar(id) {
+	     var geometry = new THREE.BoxGeometry( 200, 100, 50 );
+	     var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+	     var cube = new THREE.Mesh( geometry, material );
+	     geometries[id] = cube;
+	     scene.add( cube );
+	 }
+
+	 function createBall(id) {
+	     var sphere = new THREE.Mesh(new THREE.SphereGeometry( 100, 32, 32 ),
+					 new THREE.MeshLambertMaterial( { color: 0x0000ff }) );
+	     geometries[id] = sphere;
+	     scene.add( sphere );     
+	 }
 	 
 	 function draw(data) {
 	     frame_data = data;
-
-	     max_frame = d3.max(data, function(d) { return parseInt(d.frame) });
-	     
+	     max_frame = d3.max(data, function(d) { return parseInt(d.frame) });	     
 	     renderer.setSize( window.innerWidth - 5, window.innerHeight - 5);
 	     document.body.appendChild( renderer.domElement );
-
-	     var ball;
-	     
   	     for(item in data) {
-		 if (data[item].frame != 0) {
-		     break;
-		 }
 		 var line = data[item];
 		 objects[line.id] = data[item];
 	     }
-	     for(actor in objects) {
-
-		 if (actor == 'ball') {
-		     var sphere = new THREE.Mesh(new THREE.SphereGeometry( 100, 32, 32 ),
-						 new THREE.MeshLambertMaterial( { color: 0x0000ff }) );
-		     geometries[actor] = sphere;
-		     ball = sphere;
-		     scene.add( sphere );
-		 }
-		 else {
-		     var geometry = new THREE.BoxGeometry( 200, 100, 50 );
-		     var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
-		     var cube = new THREE.Mesh( geometry, material );
-		     geometries[actor] = cube;
-		     scene.add( cube );
-		 }
-	     }
-
 	     camera.position.x = 1000;
 	     camera.position.z = 1000;
 	     render();
@@ -154,10 +143,12 @@
 	 function render() {
 	     requestAnimationFrame( render );
 
+	     var items_in_frame = {}
 	     for(item in frame_data) {
 		 // Yes I know, super inefficent
 		 if (frame_data[item].frame == frame) {
 		     datum = frame_data[item];
+		     items_in_frame[datum.id] = true;
 		     obj = geometries[datum.id];
 		     if (obj !== undefined) {
 			 obj.position.set(datum.x, datum.y, datum.z);
@@ -173,6 +164,22 @@
 			     }
 			 }
 		     }
+		     else {
+			 if (datum.id === 'ball') {
+			     createBall(datum.id);
+			 }
+			 else {
+			     createPlayerCar(datum.id);
+			 }
+			 console.log("Created: " + datum.id);
+		     }
+		 }
+	     }
+
+	     for (geo in geometries) {
+		 if (!(geo in items_in_frame)) {
+		     scene.remove(geo);
+		     // console.log("Removed " + geo);
 		 }
 	     }
 

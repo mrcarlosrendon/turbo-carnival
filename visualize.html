@@ -9,6 +9,18 @@
 	</style>
     </head>
     <body>
+
+	<div style="position: absolute; color: white; font-family: sans-serif">
+	    <h1 id="frame_counter">Frame: </h1>
+	    <p>Controls: </p>
+	    <p>w - watch from center of arena at ground level</p>
+	    <p>t - watch top down following ball</p>
+	    <p>r - restart from beginning</p>
+	    <p>space - pause/resume</p>
+	    <p>right arrow - advance one frame</p>
+	    <p>left arrow - reverse one frame</p>
+	</div>
+	
 	<script src="js/three.js"></script>
 	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<script>
@@ -64,19 +76,9 @@
 				    new THREE.MeshLambertMaterial( { color: 0xffffff, wireframe: true } ));
 	 goal2.position.set(0, -(5113+500), 250);
 	 scene.add(goal2);
-	 
-	 var text_overlay = document.createElement('div');
-	 text_overlay.style.position = 'absolute';
-	 text_overlay.style.color = 'white';
 
-	 var frame_counter = document.createElement('h1');
-	 frame_counter.innerHTML = "Frame: ";
-	 text_overlay.appendChild(frame_counter);
-	 
-	 document.body.appendChild(text_overlay);
-	 
+	 var frame_counter = d3.select("#frame_counter");
 	 var frame_data;
-
 	 var frame_by_frame_mode = false;
 	 
 	 document.onkeydown = checkKey;
@@ -97,7 +99,12 @@
 	     }
 	     else if (e.keyCode === 32) {
 		 // space 
-		 frame_by_frame_mode = false;
+		 if (frame_by_frame_mode) {
+		     frame_by_frame_mode = false;
+		 }
+		 else {
+		     frame_by_frame_mode = true;
+		 }
 	     }
 	     else if (e.keyCode === 87) {
 		 // w
@@ -108,7 +115,11 @@
 		 // t
 		 watchTopOfBallMode = true;
 		 watchBallCenterMode = false;
-	     }		 
+	     }
+	     else if (e.keyCode === 82) {
+		 // r
+		 frame = 0;
+	     }
 	 }
 
 	 function createPlayerCar(id) {
@@ -184,10 +195,10 @@
 	     }
 
 	     if (frame_by_frame_mode) {
-		 frame_counter.innerHTML = "Frame: " + frame;
+		 frame_counter.html("Frame: " + frame);
 	     }
 	     else if (frame % 30 === 0) {
-		 frame_counter.innerHTML = "Frame: " + frame;
+		 frame_counter.html("Frame: " + frame);
 	     }
 			     
 	     renderer.render( scene, camera );

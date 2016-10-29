@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	<meta charset=utf-8>
+	<title>Turbo Carnival</title>
+	<style>
+	 body { margin: 0; }
+	 canvas { width: 100%; height: 100% }
+	</style>
+    </head>
+    <body>
+
+	<div style="position: absolute; color: white; font-family: sans-serif">
+	    <h1 id="frame_counter">Frame: </h1>
+	    <p>Controls: </p>
+	    <p>w - watch from center of arena at ground level</p>
+	    <p>t - watch top down following ball</p>
+	    <p>r - restart from beginning</p>
+	    <p>space - pause/resume</p>
+	    <p>right arrow - advance one frame</p>
+	    <p>left arrow - reverse one frame</p>
+	</div>
+	
+	<script src="js/three.js"></script>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script>
+
+	 d3.csv("sample_data/demo.small", function(error, data){
+	     draw(data);
+	 });
+
+	 var frame = 0;
+	 var max_frame = 0;
+	 var objects = {};
+	 var geometries = {};
+
+	 var watchTopOfBallMode = false;
+	 var watchBallCenterMode = true;
+
+	 var scene = new THREE.Scene();
+	 var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 9000 );	 
+	 var renderer = new THREE.WebGLRenderer();
+
+	 var point_light = new THREE.PointLight( 0xffffff, 1, 9000 );
+	 point_light.position.set( 0, 0, 1000 );
+	 scene.add( point_light );
+
+	 var ambient_light = new THREE.AmbientLight ( 0x404040 );
+	 scene.add( ambient_light );
+
+	 var plane = new THREE.Mesh(new THREE.PlaneGeometry(4035*2, 5113*2),
+				    new THREE.MeshLambertMaterial( { color: 0x00ff00 }));
+	 scene.add( plane );
+
+	 var arenaGeo = new THREE.BoxGeometry(4035*2, 5113*2, 6000)
+	 var arena = new THREE.Mesh(arenaGeo,
+				    new THREE.MeshLambertMaterial( { color: 0xaaaaaa, vertexColors: THREE.FaceColors, side: THREE.BackSide }));
+
+	 var orangeSide = 0xfcca6d;
+	 var blueSide = 0x6d9ffc;
+	 arenaGeo.faces[4].color.setHex( orangeSide );
+	 arenaGeo.faces[5].color.setHex( orangeSide );
+	 arenaGeo.faces[6].color.setHex( blueSide );
+	 arenaGeo.faces[7].color.setHex( blueSide );
+	 
+	 // put below the ground
+	 arena.position.z = -1;
+	 scene.add( arena );
+	 
+	 var goal1 = new THREE.Mesh(new THREE.BoxGeometry(1633, 1400, 500),
+				    new THREE.MeshLambertMaterial( { color: 0xffffff, wireframe: true } ));
+	 goal1.position.set(0, 5113+500, 250);
+	 scene.add(goal1);
+	 
+	 var goal2 = new THREE.Mesh(new THREE.BoxGeometry(1633, 1400, 500),
+				    new THREE.MeshLambertMaterial( { color: 0xffffff, wireframe: true } ));
+	 goal2.position.set(0, -(5113+500), 250);
+	 scene.add(goal2);
+
+	 var frame_counter = d3.select("#frame_counter");
+	 var frame_data;
+	 var frame_by_frame_mode = false;
+	 
+	 document.onkeydown = checkKey;
+	 function checkKey(e) {
+	     if (e.keyCode === 37) {
+		 // left arrow
+		 frame_by_frame_mode = true;
+		 if (frame > 0) {
+		     frame--;
+		 }
+	     }
+	     else if (e.keyCode === 39) {
+		 // right arrow
+		 frame_by_frame_mode = true;
+		 if (frame < max_frame) {
+		     frame++;
+		 }
+	     }
+	     else if (e.keyCode === 32) {
+		 // space 
+		 if (frame_by_frame_mode) {
+		     frame_by_frame_mode = false;
+		 }
+		 else {
+		     frame_by_frame_mode = true;
+		 }
+	     }
+	     else if (e.keyCode === 87) {
+		 // w
+		 watchBallCenterMode = true;
+		 watchTopOfBallMode = false;
+	     }
+	     else if (e.keyCode === 84) {
+		 // t
+		 watchTopOfBallMode = true;
+		 watchBallCenterMode = false;
+	     }
+	     else if (e.keyCode === 82) {
+		 // r
+		 frame = 0;
+	     }
+	 }
+
+	 function createPlayerCar(id) {
+	     var geometry = new THREE.BoxGeometry( 200, 100, 50 );
+	     var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+	     var cube = new THREE.Mesh( geometry, material );
+	     geometries[id] = cube;
+	     scene.add( cube );
+	 }
+
+	 function createBall(id) {
+	     var sphere = new THREE.Mesh(new THREE.SphereGeometry( 100, 32, 32 ),
+					 new THREE.MeshLambertMaterial( { color: 0x0000ff }) );
+	     geometries[id] = sphere;
+	     scene.add( sphere );     
+	 }
+	 
+	 function draw(data) {
+	     frame_data = data;
+	     max_frame = d3.max(data, function(d) { return parseInt(d.frame) });	     
+	     renderer.setSize( window.innerWidth - 5, window.innerHeight - 5);
+	     document.body.appendChild( renderer.domElement );
+  	     for(item in data) {
+		 var line = data[item];
+		 objects[line.id] = data[item];
+	     }
+	     camera.position.x = 1000;
+	     camera.position.z = 1000;
+	     render();
+	 }
+	 
+	 function render() {
+	     requestAnimationFrame( render );
+
+	     var items_in_frame = {}
+	     for(item in frame_data) {
+		 // Yes I know, super inefficent
+		 if (frame_data[item].frame == frame) {
+		     datum = frame_data[item];
+		     items_in_frame[datum.id] = true;
+		     obj = geometries[datum.id];
+		     if (obj !== undefined) {
+			 obj.position.set(datum.x, datum.y, datum.z);
+			 obj.rotation.set(datum.yaw*Math.PI, datum.roll*Math.PI, datum.pitch*Math.PI);
+			 if (datum.id === 'ball') {
+			     if (watchTopOfBallMode) {
+				 camera.position.set(datum.x, datum.y, 4000);
+				 camera.rotation.set(0, 0, 0);
+			     }
+			     else if (watchBallCenterMode) {
+				 camera.position.set(0, 0, 1000);
+				 camera.lookAt(obj.position);
+			     }
+			 }
+		     }
+		     else {
+			 if (datum.id === 'ball') {
+			     createBall(datum.id);
+			 }
+			 else {
+			     createPlayerCar(datum.id);
+			 }
+			 console.log("Created: " + datum.id);
+		     }
+		 }
+	     }
+
+	     for (geo in geometries) {
+		 if (!(geo in items_in_frame)) {
+		     scene.remove(geo);
+		     // console.log("Removed " + geo);
+		 }
+	     }
+
+	     if (frame_by_frame_mode) {
+		 frame_counter.html("Frame: " + frame);
+	     }
+	     else if (frame % 30 === 0) {
+		 frame_counter.html("Frame: " + frame);
+	     }
+			     
+	     renderer.render( scene, camera );
+	     if (!frame_by_frame_mode && frame < max_frame) {
+		 frame++;
+	     }
+	 }
+	</script>
+    </body>
+</html>

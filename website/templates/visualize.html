@@ -11,6 +11,7 @@
     <body>
 
 	<div style="position: absolute; color: white; font-family: sans-serif">
+	    <a href="/">Upload another</a>
 	    <h1 id="frame_counter">Frame: </h1>
 	    <p>Controls: </p>
 	    <p>w - watch from center of arena at ground level</p>
@@ -21,11 +22,11 @@
 	    <p>left arrow - reverse one frame</p>
 	</div>
 	
-	<script src="js/three.js"></script>
+	<script src="/static/js/three.js"></script>
 	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<script>
 
-	 d3.csv("sample_data/demo.small", function(error, data){
+	 d3.csv("/get_replay_data/{{ filename }}", function(error, data){
 	     draw(data);
 	 });
 

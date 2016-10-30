@@ -5,7 +5,11 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-app.config['UPLOAD_FOLDER'] = 'C:/Users/Carlos/Documents/GitHub/turbo-carnival/website/uploads'
+if os.name == 'nt':
+    app.config['UPLOAD_FOLDER'] = 'C:/Users/Carlos/Documents/GitHub/turbo-carnival/website/uploads'    
+else:
+    app.config['UPLOAD_FOLDER'] = '/app/uploads'
+    
 # 2 megs max
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 
@@ -70,6 +74,6 @@ def get_replay_data(insecure_filename):
     return text
 
 if __name__ == "__main__":
-    app.run()
+    app.run('0.0.0.0')
 
     

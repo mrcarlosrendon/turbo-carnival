@@ -29,21 +29,24 @@ def upload_file():
         if file and allowed_file(file.filename):            
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('view_replay', filename=filename))
+            return redirect(url_for('view_replay', insecure_filename=filename))
         else:
             return render_template("upload.html", error="bad file type")
     if request.method == 'GET':
         return render_template("upload.html")
     
-@app.route("/view_replay/<filename>")
-def view_replay(filename):
+@app.route("/view_replay/<insecure_filename>")
+def view_replay(insecure_filename):
+    filename = secure_filename(insecure_filename)
     in_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     json_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename + ".json")
     csv_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename + ".csv")
+
+    if os.path.isfile(csv_filename):
+        return render_template("visualize.html", filename=filename)
     
     octane_in = open(in_filename, "r")
     octane_out = open(json_filename, "w")
-
     
     res = subprocess.call(['octane'], stdin=octane_in, stdout=octane_out)
     if res == 0:
@@ -51,8 +54,20 @@ def view_replay(filename):
         csv_out = open(csv_filename, "w")
         res = subprocess.call(['python', '../rocket_league_replay_decode.py'], stdin=csv_in, stdout=csv_out)
         if res == 0:
-            return render_template("visualize.html", filename=csv_filename)
+            return render_template("visualize.html", filename=filename)
     return "error processing"
+
+@app.route("/get_replay_data/<insecure_filename>")
+def get_replay_data(insecure_filename):
+    filename = secure_filename(insecure_filename)
+    csv_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename + ".csv")
+    csv = open(csv_filename, "r")
+    text = csv.read()
+    ILLEGALS = [";", ":", "!", "@", "`", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "<", ">", "?", "'", '"', "\\"]
+    for illegal in ILLEGALS:        
+        if text.__contains__(illegal):
+            return ""                
+    return text
 
 if __name__ == "__main__":
     app.run()

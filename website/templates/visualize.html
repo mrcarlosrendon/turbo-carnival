@@ -50,7 +50,7 @@
 	 scene.add( ambient_light );
 
 	 var plane = new THREE.Mesh(new THREE.PlaneGeometry(4035*2, 5113*2),
-				    new THREE.MeshLambertMaterial( { color: 0x00ff00 }));
+				    new THREE.MeshLambertMaterial( { map: THREE.ImageUtils.loadTexture('/static/images/field.png') }));
 	 scene.add( plane );
 
 	 var arenaGeo = new THREE.BoxGeometry(4035*2, 5113*2, 6000)
@@ -133,7 +133,7 @@
 
 	 function createBall(id) {
 	     var sphere = new THREE.Mesh(new THREE.SphereGeometry( 100, 32, 32 ),
-					 new THREE.MeshLambertMaterial( { color: 0x0000ff }) );
+					 new THREE.MeshLambertMaterial( { color: 0xffffff }) );
 	     geometries[id] = sphere;
 	     scene.add( sphere );     
 	 }

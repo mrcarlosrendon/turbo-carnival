@@ -46,15 +46,38 @@ def extract_positions(spawned_or_updated, ball_id, actor_cars):
             positions.append(pos_dict)
     return positions
 
-def print_positions_csv(frame_positions):
-    print("frame,id,x,y,z,yaw,pitch,roll")
+def print_positions_csv(frame_positions, goal_frames):
+    team1score = 0
+    team2score = 0
+    print("frame,id,x,y,z,yaw,pitch,roll,scorer,team1score,team2score")
     for frame, frame_pos in enumerate(frame_positions):
+        scorer = ''        
+        if goal_frames.has_key(frame):
+            scorer = goal_frames[frame]['player']
+            team = goal_frames[frame]['team']
+            if team == 0:
+                team1score = team1score + 1
+            else:
+                team2score = team2score + 1
         for actor_pos in frame_pos:
             for actor in actor_pos:
-                print("{},{},{},{},{},{},{},{}".format(frame, actor['id'], \
-                             actor['x'], actor['y'], actor['z'], \
-                             actor['yaw'], actor['pitch'], actor['roll']))
+                print("{},{},{},{},{},{},{},{},{},{},{}".format(\
+                    frame, actor['id'], \
+                    actor['x'], actor['y'], actor['z'], \
+                    actor['yaw'], actor['pitch'], actor['roll'], \
+                    scorer, team1score, team2score
+                ))
 
+def extract_goal_frames(replay_json):
+    goal_frames = {}
+    goals_json = replay_json['Metadata']['Goals']['Value']
+    for goal in goals_json:
+        frame = goal['frame']['Value']
+        team = goal['PlayerTeam']['Value']
+        player = goal['PlayerName']['Value']
+        goal_frames[frame] = { 'team': team , 'player': player }
+    return goal_frames
+                
 def parse():
     replay_json = json.load(sys.stdin)
     # actor_id -> actor
@@ -68,6 +91,8 @@ def parse():
     ball_id = -1
     # positions of all items for each frame
     frame_positions = []
+
+    goal_frames = extract_goal_frames(replay_json)
     
     for index, frame in enumerate(replay_json['Frames']):
         this_frame_positions = []
@@ -99,6 +124,6 @@ def parse():
                 
         frame_positions.append(this_frame_positions)
 
-    print_positions_csv(frame_positions)
+    print_positions_csv(frame_positions, goal_frames)
 
 parse()

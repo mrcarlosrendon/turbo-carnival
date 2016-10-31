@@ -12,7 +12,9 @@
 
 	<div style="position: absolute; color: white; font-family: sans-serif">
 	    <a href="/">Upload another</a>
+	    <h1 id="score">Score: 0-0</h1>
 	    <h1 id="frame_counter">Frame: </h1>
+	    <h2 id="last_scorer">Last Scorer: </h2>	    
 	    <p>Controls: </p>
 	    <p>w - watch from center of arena at ground level</p>
 	    <p>t - watch top down following ball</p>
@@ -79,6 +81,8 @@
 	 scene.add(goal2);
 
 	 var frame_counter = d3.select("#frame_counter");
+	 var score_text = d3.select("#score");
+	 var last_scorer_text = d3.select("#last_scorer");
 	 var frame_data;
 	 var frame_by_frame_mode = false;
 	 
@@ -120,6 +124,7 @@
 	     else if (e.keyCode === 82) {
 		 // r
 		 frame = 0;
+		 last_scorer_text.html("Last Scorer:");
 	     }
 	 }
 
@@ -185,6 +190,11 @@
 			 }
 			 console.log("Created: " + datum.id);
 		     }
+
+		     if (datum['scorer'] !== '') {
+			 last_scorer_text.html("Last Scorer: " + datum['scorer']);
+			 score_text.html("Score: " + datum['team1score'] + "-" + datum['team2score']);		 
+		     }
 		 }
 	     }
 
@@ -197,11 +207,11 @@
 
 	     if (frame_by_frame_mode) {
 		 frame_counter.html("Frame: " + frame);
+
 	     }
 	     else if (frame % 30 === 0) {
 		 frame_counter.html("Frame: " + frame);
 	     }
-			     
 	     renderer.render( scene, camera );
 	     if (!frame_by_frame_mode && frame < max_frame) {
 		 frame++;

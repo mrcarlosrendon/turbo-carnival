@@ -67,10 +67,6 @@ def get_replay_data(insecure_filename):
     csv_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename + ".csv")
     csv = open(csv_filename, "r")
     text = csv.read()
-    ILLEGALS = [";", ":", "!", "@", "`", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "<", ">", "?", "'", '"', "\\"]
-    for illegal in ILLEGALS:        
-        if text.__contains__(illegal):
-            return ""                
     return text
 
 if __name__ == "__main__":

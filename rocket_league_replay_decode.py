@@ -14,6 +14,7 @@ frame numer, id, x, y, z, yaw, pitch, roll
 """
 import sys
 import json
+import cgi
 
 def update_car_ids(actor_cars, updated):
     for actor_id, value in updated.items():                
@@ -46,10 +47,16 @@ def extract_positions(spawned_or_updated, ball_id, actor_cars):
             positions.append(pos_dict)
     return positions
 
+def print_csv_line(*args):
+    line = ""
+    for arg in args:
+        line += '"' + cgi.escape(str(arg)) + '",'    
+    print(line[0:len(line)-1])
+
 def print_positions_csv(frame_positions, goal_frames):
     team1score = 0
     team2score = 0
-    print("frame,id,x,y,z,yaw,pitch,roll,scorer,team1score,team2score")
+    print_csv_line("frame", "id", "x", "y", "z", "yaw", "pitch", "roll", "scorer", "team1score", "team2score")
     for frame, frame_pos in enumerate(frame_positions):
         scorer = ''        
         if goal_frames.has_key(frame):
@@ -60,13 +67,13 @@ def print_positions_csv(frame_positions, goal_frames):
             else:
                 team2score = team2score + 1
         for actor_pos in frame_pos:
-            for actor in actor_pos:
-                print("{},{},{},{},{},{},{},{},{},{},{}".format(\
+            for actor in actor_pos:                
+                print_csv_line(
                     frame, actor['id'], \
                     actor['x'], actor['y'], actor['z'], \
                     actor['yaw'], actor['pitch'], actor['roll'], \
                     scorer, team1score, team2score
-                ))
+                )
 
 def extract_goal_frames(replay_json):
     goal_frames = {}

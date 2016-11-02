@@ -25,6 +25,7 @@
 	</div>
 	
 	<script src="/static/js/three.js"></script>
+	<script src="/static/js/ColladaLoader2.js"></script>
 	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<script>
 
@@ -130,11 +131,24 @@
 	 }
 
 	 function createPlayerCar(id) {
-	     var geometry = new THREE.BoxGeometry( 200, 100, 50 );
-	     var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
-	     var cube = new THREE.Mesh( geometry, material );
-	     geometries[id] = cube;
-	     scene.add( cube );
+	     //var geometry = new THREE.BoxGeometry( 200, 100, 50 );
+	     //var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+	     //var cube = new THREE.Mesh( geometry, material );
+
+
+	     var loader = new THREE.ColladaLoader();
+	     var car_model;
+	     loader.options.convertUpAxis = true;
+	     loader.load('/static/models/potato_car.dae', function colladaReady( collada ) {
+		 
+		 car_model = collada.scene;
+		 for (var i = 0; i < car_model.children.length; i++) {
+		     car_model.children[i].material = new THREE.MeshLambertMaterial( { color: 0xff0000 });
+		 }
+		 car_model.scale.x = car_model.scale.y = car_model.scale.z = 40;
+		 geometries[id] = car_model;
+		 scene.add( car_model );
+	     });
 	 }
 
 	 function createBall(id) {

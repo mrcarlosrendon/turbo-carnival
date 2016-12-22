@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import boto3
 from flask import Flask, request, redirect, url_for, render_template
@@ -8,13 +9,8 @@ application = Flask(__name__)
 
 s3 = boto3.resource('s3')
 S3_BUCKET_NAME = 'turbo-carnival'
-
-if os.name == 'nt':
-    application.config['UPLOAD_FOLDER'] = 'C:/Users/Carlos/Documents/GitHub/turbo-carnival/website/uploads'    
-else:
-    application.config['UPLOAD_FOLDER'] = '/app/uploads'
     
-# 2 megs max
+# 2 megs max upload
 application.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 
 @application.route("/")
@@ -37,7 +33,8 @@ def upload_file():
         if file and allowed_file(file.filename):            
             filename = secure_filename(file.filename)
             try:
-                s3.Bucket(S3_BUCKET_NAME).put_object(Key="replays/" + filename, Body=file)
+                replay_filename = "replays/" + filename
+                s3.Bucket(S3_BUCKET_NAME).put_object(Key=replay_filename, Body=file)
             except:
                 return render_template("upload.html", error="Upload failed. Try again later.")
             return redirect(url_for('view_replay', insecure_filename=filename))
@@ -49,36 +46,46 @@ def upload_file():
 @application.route("/view_replay/<insecure_filename>")
 def view_replay(insecure_filename):
     filename = secure_filename(insecure_filename)
-    in_filename = os.path.join(application.config['UPLOAD_FOLDER'], filename)
-    json_filename = os.path.join(application.config['UPLOAD_FOLDER'], filename + ".json")
-    csv_filename = os.path.join(application.config['UPLOAD_FOLDER'], filename + ".csv")
-
-    filename = secure_filename(insecure_filename)
     obj = s3.Object(S3_BUCKET_NAME, filename + ".csv")
     try:
         obj.load()
         return render_template("visualize.html", filename=filename)
     except:
-        print("it's cool")
-        
+        pass
+
+    try:
+        replay_filename = "replays/" + filename
+        tmp_filename = "/tmp/" + filename
+        replay_obj = s3.Object(S3_BUCKET_NAME, replay_filename).download_file(tmp_filename)
+    except:
+        return "could not get replay from s3"
     
-    octane_in = open(in_filename, "r")
-    octane_out = open(json_filename, "w")
-    
-    res = subprocess.call(['octane'], stdin=octane_in, stdout=octane_out)
-    if res == 0:
-        csv_in = open(json_filename, "r")
-        csv_out = open(csv_filename, "w")
-        res = subprocess.call(['python', '../rocket_league_replay_decode.py'], stdin=csv_in, stdout=csv_out)
-        if res == 0:
-            return render_template("visualize.html", filename=filename)
-    return "error processing"
+    tmp_replay_file = open("/tmp/" + filename, 'r')
+
+    p1 = subprocess.Popen(['octane'], stdin=tmp_replay_file, stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(['python', '../rocket_league_replay_decode.py'],  
+                          stdin=p1.stdout, stdout=subprocess.PIPE)
+    p1.stdout.close()
+    p1.wait()
+    output = p2.communicate()[0]
+    tmp_replay_file.close()
+    os.remove(tmp_filename)
+    if not p1.returncode == 0 or not p2.returncode == 0: 
+        return "pipeline fail " + str(p1.returncode) + " " + str(p2.returncode)
+
+    try:
+        csv_filename = "replay_csvs/" + filename + ".csv"
+        s3.Bucket(S3_BUCKET_NAME).put_object(Key=csv_filename, Body=output)
+    except:
+        return "s3 upload failed"
+
+    return render_template("visualize.html", filename=filename)
 
 @application.route("/get_replay_data/<insecure_filename>")
 def get_replay_data(insecure_filename):
     filename = secure_filename(insecure_filename)
-    obj = s3.Object(S3_BUCKET_NAME, "replay_csvs" + filename + ".csv")
-    text = ""
+    csv_filename = "replay_csvs/" + filename + ".csv"
+    obj = s3.Object(S3_BUCKET_NAME, csv_filename)
     try:
         obj_dict = obj.get()
         text = obj_dict['Body'].read()

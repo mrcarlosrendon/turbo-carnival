@@ -1,0 +1,12 @@
+branch-defaults:
+  default:
+    environment: turbo-carnival-dev
+global:
+  application_name: turbo-carnival
+  branch: null
+  default_ec2_keyname: null
+  default_platform: python2.7
+  default_region: us-west-2
+  profile: null
+  repository: null
+  sc: null

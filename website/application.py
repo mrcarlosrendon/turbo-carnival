@@ -63,7 +63,7 @@ def view_replay(insecure_filename):
     tmp_replay_file = open("/tmp/" + filename, 'r')
 
     p1 = subprocess.Popen(['octane'], stdin=tmp_replay_file, stdout=subprocess.PIPE)
-    p2 = subprocess.Popen(['python', '../rocket_league_replay_decode.py'],  
+    p2 = subprocess.Popen(['python', 'rocket_league_replay_decode.py'],  
                           stdin=p1.stdout, stdout=subprocess.PIPE)
     p1.stdout.close()
     p1.wait()

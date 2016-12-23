@@ -17,13 +17,13 @@ application.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 def index():
     try:
         replays = s3.Bucket(S3_BUCKET_NAME).objects.filter(Prefix="replays", MaxKeys=10)
+        replay_links = []
+        for replay in replays:
+            if replay.key.endswith(".replay"):
+                after_path = replay.key.split("/")[1]
+                replay_links.append(url_for('view_replay', insecure_filename=after_path))
     except:
-        replays = []
-    replay_links = []
-    for replay in replays:
-        if replay.key.endswith(".replay"):
-            after_path = replay.key.split("/")[1]
-            replay_links.append(url_for('view_replay', insecure_filename=after_path))
+        replay_links = []
     return render_template("index.html", recent_list=replay_links)
 
 def allowed_file(filename):

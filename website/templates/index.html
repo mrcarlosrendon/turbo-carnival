@@ -1,4 +1,11 @@
 <html>
     <h1>Visualize your Rocket League replays in your browser in 3D</h1>
     <a href="upload">Click here to upload a replay</a>
+
+    <h1>Sample replays:</h1>
+    <ul>
+      {% for link in recent_list %}
+      <li><a href="{{ link }}">{{ link }}</a></li>
+      {% endfor %}
+    </ul>    
 </html>

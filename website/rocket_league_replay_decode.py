@@ -96,6 +96,8 @@ def put_metadata_in_dynamo(replay_json):
     replay_map = metadata['MapName']['Value']
     replay_date = metadata['Date']['Value']
     players = []
+    team0_players = set()
+    team1_players = set()
     for player in metadata['PlayerStats']['Value']:
         name = player['Name']['Value']
         team = player['Team']['Value']
@@ -103,7 +105,12 @@ def put_metadata_in_dynamo(replay_json):
         online_id = player['OnlineID']['Value']
         platform = player['Platform']['Value']
         players.append({'name': name, 'team': team, 'ranking': ranking,
-                        'online_id': online_id, 'platform': platform})        
+                        'online_id': online_id, 'platform': platform})
+        if team == 0:
+            team0_players.add(name)
+        else:
+            team1_players.add(name)
+        
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('turbo-carnival')
     try:
@@ -115,7 +122,9 @@ def put_metadata_in_dynamo(replay_json):
                 'team1_score': team1_score,
                 'replay_map': replay_map,
                 'replay_date': replay_date,
-                'players': players
+                'players': players,
+                'team0_players': team0_players,
+                'team1_players': team1_players
             }
         )
     except:

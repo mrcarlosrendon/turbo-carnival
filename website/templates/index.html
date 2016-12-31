@@ -2,7 +2,7 @@
     <h1>Visualize your Rocket League replays in your browser in 3D</h1>
     <h2><a href="upload">Click here to upload a replay</a></h2>
 
-    <h2>Sample replays:</h2>
+    <h2>View replays:</h2>
     <table>
 	<tr>
 	    <th>ID</th>
@@ -10,8 +10,8 @@
 	    <th>Game Type</th>
 	    <th>Score</th>
 	    <th>Map</th>
-	    <td>Team 1 Players</td>
-	    <td>Team 2 Players</td>
+	    <th>Team 1 Players</th>
+	    <th>Team 2 Players</th>
 	</tr>
 
 	{% for replay in replays %}
@@ -21,8 +21,8 @@
 	    <td>{{ replay.team_size }}v{{ replay.team_size }}</td>
 	    <td>{{ replay.team0_score }} - {{ replay.team1_score }}</td>
 	    <td>{{ replay.replay_map }}</td>
-	    <td>todo</td>
-	    <td>todo</td>
+	    <td>{% for player in replay.team0_players %}{{player}} {% endfor %}</td>
+	    <td>{% for player in replay.team1_players %}{{player}} {% endfor %}</td>
 	</tr>
 	{% endfor %}
 	

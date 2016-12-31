@@ -111,7 +111,7 @@ def put_metadata_in_dynamo(replay_json):
         else:
             team1_players.add(name)
         
-    dynamodb = boto3.resource('dynamodb')
+    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
     table = dynamodb.Table('turbo-carnival')
     try:
         resp = table.put_item(

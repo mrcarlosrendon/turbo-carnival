@@ -1,5 +1,6 @@
 """
 Decodes Rocket League replay JSON output from Octane
+Also outputs metadata into DynamoDB
 
 https://github.com/tfausak/octane
 
@@ -15,6 +16,7 @@ frame numer, id, x, y, z, yaw, pitch, roll
 import sys
 import json
 import cgi
+import boto3
 
 def update_car_ids(actor_cars, updated):
     for actor_id, value in updated.items():                
@@ -84,9 +86,46 @@ def extract_goal_frames(replay_json):
         player = goal['PlayerName']['Value']
         goal_frames[frame] = { 'team': team , 'player': player }
     return goal_frames
-                
+
+def put_metadata_in_dynamo(replay_json):
+    metadata = replay_json['Metadata']    
+    replay_id = metadata['Id']['Value']
+    team_size = metadata['TeamSize']['Value']
+    team0_score = metadata['Team0Score']['Value']
+    team1_score = metadata['Team1Score']['Value']
+    replay_map = metadata['MapName']['Value']
+    replay_date = metadata['Date']['Value']
+    players = []
+    for player in metadata['PlayerStats']['Value']:
+        name = player['Name']['Value']
+        team = player['Team']['Value']
+        ranking = player['Score']['Value']
+        online_id = player['OnlineID']['Value']
+        platform = player['Platform']['Value']
+        players.append({'name': name, 'team': team, 'ranking': ranking,
+                        'online_id': online_id, 'platform': platform})        
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('turbo-carnival')
+    try:
+        resp = table.put_item(
+            Item={
+                'replay_key': replay_id,
+                'team_size': team_size,
+                'team0_score': team0_score,
+                'team1_score': team1_score,
+                'replay_map': replay_map,
+                'replay_date': replay_date,
+                'players': players
+            }
+        )
+    except:
+        sys.stderr.write("trouble writing to dynamodb")
+
 def parse():
     replay_json = json.load(sys.stdin)
+
+    put_metadata_in_dynamo(replay_json)
+    
     # actor_id -> actor
     actors = {}
     # contains only the players

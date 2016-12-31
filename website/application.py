@@ -9,6 +9,9 @@ application = Flask(__name__)
 
 s3 = boto3.resource('s3')
 S3_BUCKET_NAME = 'turbo-carnival'
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('turbo-carnival')
     
 # 2 megs max upload
 application.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
@@ -16,15 +19,10 @@ application.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 @application.route("/")
 def index():
     try:
-        replays = s3.Bucket(S3_BUCKET_NAME).objects.filter(Prefix="replays", MaxKeys=10)
-        replay_links = []
-        for replay in replays:
-            if replay.key.endswith(".replay"):
-                after_path = replay.key.split("/")[1]
-                replay_links.append(url_for('view_replay', insecure_filename=after_path))
+        replays = table.scan(Limit=10)['Items']
     except:
-        replay_links = []
-    return render_template("index.html", recent_list=replay_links)
+        replays = []
+    return render_template("index.html", replays=replays)
 
 def allowed_file(filename):
     return filename.endswith(".replay")
@@ -46,7 +44,7 @@ def upload_file():
                 s3.Bucket(S3_BUCKET_NAME).put_object(Key=replay_filename, Body=file)
             except:
                 return render_template("upload.html", error="Upload failed. Try again later.")
-            return redirect(url_for('view_replay', insecure_filename=filename))
+            return redirect(url_for('view_replay', insecure_filename=filename.replace(".replay", "")))
         else:
             return render_template("upload.html", error="bad file type")
     if request.method == 'GET':
@@ -55,7 +53,7 @@ def upload_file():
 @application.route("/view_replay/<insecure_filename>")
 def view_replay(insecure_filename):
     filename = secure_filename(insecure_filename)
-    obj = s3.Object(S3_BUCKET_NAME, filename + ".csv")
+    obj = s3.Object(S3_BUCKET_NAME, filename + ".replay.csv")
     try:
         obj.load()
         return render_template("visualize.html", filename=filename)
@@ -63,7 +61,7 @@ def view_replay(insecure_filename):
         pass
 
     try:
-        replay_filename = "replays/" + filename
+        replay_filename = "replays/" + filename + ".replay"
         tmp_filename = "/tmp/" + filename
         replay_obj = s3.Object(S3_BUCKET_NAME, replay_filename).download_file(tmp_filename)
     except:
@@ -83,7 +81,7 @@ def view_replay(insecure_filename):
         return "pipeline fail " + str(p1.returncode) + " " + str(p2.returncode)
 
     try:
-        csv_filename = "replay_csvs/" + filename + ".csv"
+        csv_filename = "replay_csvs/" + filename + ".replay.csv"
         s3.Bucket(S3_BUCKET_NAME).put_object(Key=csv_filename, Body=output)
     except:
         return "s3 upload failed"
@@ -93,7 +91,7 @@ def view_replay(insecure_filename):
 @application.route("/get_replay_data/<insecure_filename>")
 def get_replay_data(insecure_filename):
     filename = secure_filename(insecure_filename)
-    csv_filename = "replay_csvs/" + filename + ".csv"
+    csv_filename = "replay_csvs/" + filename + ".replay.csv"
     obj = s3.Object(S3_BUCKET_NAME, csv_filename)
     try:
         obj_dict = obj.get()

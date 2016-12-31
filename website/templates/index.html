@@ -1,11 +1,30 @@
 <html>
     <h1>Visualize your Rocket League replays in your browser in 3D</h1>
-    <a href="upload">Click here to upload a replay</a>
+    <h2><a href="upload">Click here to upload a replay</a></h2>
 
-    <h1>Sample replays:</h1>
-    <ul>
-      {% for link in recent_list %}
-      <li><a href="{{ link }}">{{ link }}</a></li>
-      {% endfor %}
-    </ul>    
+    <h2>Sample replays:</h2>
+    <table>
+	<tr>
+	    <th>ID</th>
+	    <th>Date</th>
+	    <th>Game Type</th>
+	    <th>Score</th>
+	    <th>Map</th>
+	    <td>Team 1 Players</td>
+	    <td>Team 2 Players</td>
+	</tr>
+
+	{% for replay in replays %}
+	<tr>
+	    <td><a href="{{ url_for('view_replay', insecure_filename=replay.replay_key) }}">{{ replay.replay_key }}</a></td>
+	    <td>{{ replay.replay_date }}</td>
+	    <td>{{ replay.team_size }}v{{ replay.team_size }}</td>
+	    <td>{{ replay.team0_score }} - {{ replay.team1_score }}</td>
+	    <td>{{ replay.replay_map }}</td>
+	    <td>todo</td>
+	    <td>todo</td>
+	</tr>
+	{% endfor %}
+	
+    </table>
 </html>

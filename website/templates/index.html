@@ -21,8 +21,8 @@
 	    <td>{{ replay.team_size }}v{{ replay.team_size }}</td>
 	    <td>{{ replay.team0_score }} - {{ replay.team1_score }}</td>
 	    <td>{{ replay.replay_map }}</td>
-	    <td>{% for player in replay.team0_players %}{{player}} {% endfor %}</td>
-	    <td>{% for player in replay.team1_players %}{{player}} {% endfor %}</td>
+	    <td>{% for player in replay.team0_players %}{{player}}, {% endfor %}</td>
+	    <td>{% for player in replay.team1_players %}{{player}}, {% endfor %}</td>
 	</tr>
 	{% endfor %}
 	

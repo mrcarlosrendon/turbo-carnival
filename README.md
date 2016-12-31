@@ -8,9 +8,13 @@ Visualizes [Rocket League](http://www.rocketleaguegame.com/) Replays
 This application uses the following AWS services:
 - S3
 - Elastic Beanstalk
+- DynamoDB
 
 First you must have an AWS account, and create an S3 bucket. You will
 need to update `application.py` with your S3 bucket name.
+
+You also must create a DynamoDB table `turbo-carnival` with partition_key of `replay_key`. 
+Application assumes you will use region `us-west-2`.
 
 App is deployed using eb cli tool and also requires the AWS cli
 tool. These can be installed using pip.

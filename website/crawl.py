@@ -18,10 +18,8 @@ def getReplay(replay_hash):
         str_file = StringIO.StringIO(req.content)
         files = {"file": (replay_hash + ".replay", str_file)}
         post = requests.post("http://rocketleague.carlosrendon.me/upload", files=files)
-        if not post.status_code == '200':
+        if str(post.status_code) != '200':
             print("upload failed: " + str(post.status_code))
-        else:
-            print(str(post.status_code))
     else:
         print("download failed: " + str(req.status_code))
 
@@ -47,5 +45,7 @@ for replay in REPLAYS:
         print("Grabbing " + replay)
         getReplay(replay)
         time.sleep(10)
+    else:
+        print("Skipping " + replay)
 
 

@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import traceback
 import boto3
 from flask import Flask, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
@@ -22,6 +23,7 @@ def index():
         replays = table.scan(Limit=10)['Items']
     except:
         replays = []
+        traceback.print_exc(file=sys.stderr)
     return render_template("index.html", replays=replays)
 
 def allowed_file(filename):
@@ -43,6 +45,7 @@ def upload_file():
                 replay_filename = "replays/" + filename
                 s3.Bucket(S3_BUCKET_NAME).put_object(Key=replay_filename, Body=file)
             except:
+                traceback.print_exc(file=sys.stderr)
                 return render_template("upload.html", error="Upload failed. Try again later.")
             return redirect(url_for('view_replay', insecure_filename=filename.replace(".replay", "")))
         else:
@@ -58,6 +61,7 @@ def view_replay(insecure_filename):
         obj.load()
         return render_template("visualize.html", filename=filename)
     except:
+        traceback.print_exc(file=sys.stderr)
         pass
 
     try:
@@ -65,6 +69,7 @@ def view_replay(insecure_filename):
         tmp_filename = "/tmp/" + filename
         replay_obj = s3.Object(S3_BUCKET_NAME, replay_filename).download_file(tmp_filename)
     except:
+        traceback.print_exc(file=sys.stderr)
         return "could not get replay from s3"
     
     tmp_replay_file = open("/tmp/" + filename, 'r')
@@ -84,6 +89,7 @@ def view_replay(insecure_filename):
         csv_filename = "replay_csvs/" + filename + ".replay.csv"
         s3.Bucket(S3_BUCKET_NAME).put_object(Key=csv_filename, Body=output)
     except:
+        traceback.print_exc(file=sys.stderr)
         return "s3 upload failed"
 
     return render_template("visualize.html", filename=filename)
@@ -97,10 +103,9 @@ def get_replay_data(insecure_filename):
         obj_dict = obj.get()
         text = obj_dict['Body'].read()
     except:
+        traceback.print_exc(file=sys.stderr)
         text = ""
     return text
 
 if __name__ == "__main__":
     application.run('0.0.0.0')
-
-    

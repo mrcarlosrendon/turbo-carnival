@@ -23,9 +23,12 @@ def getReplay(replay_hash):
     else:
         print("download failed: " + str(req.status_code))
 
-def listRLReplays():
-    """ Grabs a list of replay hashs from the RL replays API. TODO handle paging """
-    req = requests.get("http://www.rocketleaguereplays.com/api/replays")
+def listRLReplays(page):
+    """ Grabs a list of replay hashs from the RL replays API."""
+    if page == 1:
+        req = requests.get("http://www.rocketleaguereplays.com/api/replays")
+    else:
+        req = requests.get("http://www.rocketleaguereplays.com/api/replays?page=" + str(page))
     if str(req.status_code) != '200':
         print("Error querying api: " + str(req.status_code))
         print(req.content)
@@ -38,14 +41,23 @@ def listRLReplays():
             ids.append(result['replay_id'])
     return ids
 
-REPLAYS = listRLReplays()
-for replay in REPLAYS:
-    ret = TABLE.get_item(Key={"replay_key": replay})
-    if not ret.has_key('Item'):
-        print("Grabbing " + replay)
-        getReplay(replay)
-        time.sleep(10)
-    else:
-        print("Skipping " + replay)
+def getAllReplays():
+    """ Get's all of the replays. Handle's API paging."""
+    page = 1
+    while True:
+        replays = listRLReplays(page)
+        for replay in replays:
+            try:
+                ret = TABLE.get_item(Key={"replay_key": replay})
+            except:
+                print("Exception")
+                exit(1)
+            if not ret.has_key('Item'):
+                print("Grabbing " + replay)
+                getReplay(replay)
+                time.sleep(10)
+            else:
+                print("Skipping " + replay)
+        page = page + 1
 
-
+getAllReplays()

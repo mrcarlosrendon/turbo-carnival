@@ -1,0 +1,43 @@
+SQL Star Schema
+
+Player
+-PlayerID <- created
+-Name
+-online_id
+-Platform
+
+PlayerReplay
+-ReplayId
+-PlayerID 
+-ranking <- applies to a replay
+-team <- applies to a replay
+
+Replay
+-ReplayId
+-Map
+-Date/Time
+-team0_score
+-team1_score
+-team_size
+
+
+t2.micro with single-az is $13/month
+
+
+However, RDS is kind of expensive, I want to spend more like <$5/month for dev/test
+
+DynamoDB tables cost ~ 1$ / month
+
+Access Patterns
+
+By Player Name
+
+By Replay Key
+
+By Map?? (seems lame
+
+By Ranking?
+
+By Num Players
+
+By Most Viewed?

@@ -1,6 +1,8 @@
 """ Pull replay from rocketleaguereplays and post turbo-carnival """
 import StringIO
 import time
+import sys
+import traceback
 import requests
 import boto3
 
@@ -50,7 +52,7 @@ def getAllReplays():
             try:
                 ret = TABLE.get_item(Key={"replay_key": replay})
             except:
-                print("Exception")
+                traceback.print_exc(file=sys.stderr)
                 exit(1)
             if not ret.has_key('Item'):
                 print("Grabbing " + replay)

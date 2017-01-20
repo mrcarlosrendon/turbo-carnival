@@ -1,0 +1,24 @@
+Machine Learning thoughts
+
+Training set
+
+1. Need to standardize player 1, player2, player3, player4, etc  (in relative terms of whose is scored on???)
+  
+2. Need to only look at one play mode, one map at a time (or at least remove neo-tokyo, wasteland, starboard)
+
+probably also only want to consider a given rank? maybe this doesn't matter
+
+3. Look at position (static) 5 seconds before goal
+
+i.e. for each of { ball, player1, player2, ... } input x,y,z,yaw,pitch,roll 
+
+In other words, take a replay, and slice it into positions that score within 5 seconds and those that don't
+
+label as SCORING, NONSCORING
+
+
+
+Then new positions can be ranked
+
+
+

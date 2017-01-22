@@ -37,7 +37,7 @@ def process(replay_key):
     tmp_replay_file = open("/tmp/" + replay_key, 'r')
 
     copyfile('/var/task/octane', '/tmp/octane')
-    os.chmod('/tmp/octane', 0555)
+    os.chmod('/tmp/octane', 0755)
     p1 = subprocess.Popen(['/tmp/octane'], stdin=tmp_replay_file, stdout=subprocess.PIPE)
     p2 = subprocess.Popen(['python', 'rocket_league_replay_decode.py'],  
                           stdin=p1.stdout, stdout=subprocess.PIPE)
@@ -45,7 +45,9 @@ def process(replay_key):
     p1.wait()
     output = p2.communicate()[0]
     tmp_replay_file.close()
+    # Ensure cleanliness
     os.remove(tmp_filename)
+    os.remove('/tmp/octane')
     if not p1.returncode == 0 or not p2.returncode == 0: 
         return "pipeline fail " + str(p1.returncode) + " " + str(p2.returncode)
 

@@ -7,4 +7,5 @@ cd build
 zip build.zip *
 move build.zip ..
 cd ..
+aws lambda update-function-code --function-name process-replay --zip-file fileb://build.zip --publish
 

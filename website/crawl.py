@@ -7,9 +7,8 @@ import requests
 import boto3
 
 # To setup your keys
-# aws configure --profile turbo-carnival
-SESSION = boto3.Session(profile_name='turbo-carnival')
-DYNAMO = SESSION.resource("dynamodb")
+# aws configure 
+DYNAMO = boto3.resource("dynamodb")
 TABLE = DYNAMO.Table('turbo-carnival')
 
 def getReplay(replay_hash):
@@ -19,7 +18,7 @@ def getReplay(replay_hash):
     if str(req.status_code) == '200':
         str_file = StringIO.StringIO(req.content)
         files = {"file": (replay_hash + ".replay", str_file)}
-        post = requests.post("http://rocketleague.carlosrendon.me/upload", files=files)
+        post = requests.post("http://rocketleague.carlosrendon.me/upload?bulk=true", files=files)
         if str(post.status_code) != '200':
             print("upload failed: " + str(post.status_code))
     else:

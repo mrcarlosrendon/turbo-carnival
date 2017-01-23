@@ -1,17 +1,21 @@
-import os
 import sys
-import subprocess
 import traceback
+import time
 import boto3
 from flask import Flask, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 
 application = Flask(__name__)
 
+REGION = 'us-west-2'
+
 s3 = boto3.resource('s3')
 S3_BUCKET_NAME = 'turbo-carnival'
 
-dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+sns = boto3.client('sns', region_name=REGION)
+SNS_ARN = 'arn:aws:sns:us-west-2:767736770298:turbo-carnival-process-replay'
+
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
 table = dynamodb.Table('turbo-carnival')
     
 # 2 megs max upload
@@ -56,43 +60,24 @@ def upload_file():
 @application.route("/view_replay/<insecure_filename>")
 def view_replay(insecure_filename):
     filename = secure_filename(insecure_filename)
-    obj = s3.Object(S3_BUCKET_NAME, filename + ".replay.csv")
-    try:
-        obj.load()
-        return render_template("visualize.html", filename=filename)
-    except:
-        traceback.print_exc(file=sys.stderr)
-        pass
+    obj = s3.Object(S3_BUCKET_NAME, "replay_csvs/" + filename + ".replay.csv")
+    # Wait 2 minutes max
+    for i in range(0,6):
+        try:
+            obj.load()
+            return render_template("visualize.html", filename=filename)
+        except:
+            traceback.print_exc(file=sys.stderr)
 
-    try:
-        replay_filename = "replays/" + filename + ".replay"
-        tmp_filename = "/tmp/" + filename
-        replay_obj = s3.Object(S3_BUCKET_NAME, replay_filename).download_file(tmp_filename)
-    except:
-        traceback.print_exc(file=sys.stderr)
-        return "could not get replay from s3"
-    
-    tmp_replay_file = open("/tmp/" + filename, 'r')
-
-    p1 = subprocess.Popen(['octane'], stdin=tmp_replay_file, stdout=subprocess.PIPE)
-    p2 = subprocess.Popen(['python', 'rocket_league_replay_decode.py'],  
-                          stdin=p1.stdout, stdout=subprocess.PIPE)
-    p1.stdout.close()
-    p1.wait()
-    output = p2.communicate()[0]
-    tmp_replay_file.close()
-    os.remove(tmp_filename)
-    if not p1.returncode == 0 or not p2.returncode == 0: 
-        return "pipeline fail " + str(p1.returncode) + " " + str(p2.returncode)
-
-    try:
-        csv_filename = "replay_csvs/" + filename + ".replay.csv"
-        s3.Bucket(S3_BUCKET_NAME).put_object(Key=csv_filename, Body=output)
-    except:
-        traceback.print_exc(file=sys.stderr)
-        return "s3 upload failed"
-
-    return render_template("visualize.html", filename=filename)
+        if i==0:
+            # Trigger replay to be processed
+            print("Trigger replay processing " + filename)
+            try:
+                print(sns.publish(TopicArn=SNS_ARN, Subject='replay', Message=filename))
+            except:
+                traceback.print_exc(file=sys.stderr)
+        time.sleep(20)
+    return "Error replay did not process, please upload again"
 
 @application.route("/get_replay_data/<insecure_filename>")
 def get_replay_data(insecure_filename):

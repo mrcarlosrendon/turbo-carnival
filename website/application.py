@@ -43,7 +43,7 @@ def upload_file():
         print file.filename
         if file.filename == '':
             return render_template("upload.html", error="No file selected")
-        if file and allowed_file(file.filename):            
+        if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             try:
                 replay_filename = "replays/" + filename
@@ -51,11 +51,22 @@ def upload_file():
             except:
                 traceback.print_exc(file=sys.stderr)
                 return render_template("upload.html", error="Upload failed. Try again later.")
+            if request.args.get('bulk'):
+                sendReplaySNS(filename.replace(".replay",""))
+                return "Success"
             return redirect(url_for('view_replay', insecure_filename=filename.replace(".replay", "")))
         else:
             return render_template("upload.html", error="bad file type")
     if request.method == 'GET':
         return render_template("upload.html")
+
+def sendReplaySNS(replay):
+    # Trigger replay to be processed
+    print("Trigger replay processing " + replay)
+    try:
+        print(sns.publish(TopicArn=SNS_ARN, Subject='replay', Message=replay))
+    except:
+        traceback.print_exc(file=sys.stderr)
     
 @application.route("/view_replay/<insecure_filename>")
 def view_replay(insecure_filename):
@@ -68,14 +79,8 @@ def view_replay(insecure_filename):
             return render_template("visualize.html", filename=filename)
         except:
             traceback.print_exc(file=sys.stderr)
-
         if i==0:
-            # Trigger replay to be processed
-            print("Trigger replay processing " + filename)
-            try:
-                print(sns.publish(TopicArn=SNS_ARN, Subject='replay', Message=filename))
-            except:
-                traceback.print_exc(file=sys.stderr)
+            sendReplaySNS(filename)
         time.sleep(20)
     return "Error replay did not process, please upload again"
 

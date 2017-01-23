@@ -87,12 +87,18 @@ def extract_goal_frames(replay_json):
         goal_frames[frame] = { 'team': team , 'player': player }
     return goal_frames
 
+def getMetadataValueOrDefault(metadata, key, default):
+    value = metadata.get(key)
+    if value == None:
+        return default
+    return value.get('Value')    
+
 def put_metadata_in_dynamo(replay_json):
     metadata = replay_json['Metadata']    
     replay_id = metadata['Id']['Value']
     team_size = metadata['TeamSize']['Value']
-    team0_score = metadata['Team0Score']['Value']
-    team1_score = metadata['Team1Score']['Value']
+    team0_score = getMetadataValueOrDefault(metadata, 'Team0Score', '0')
+    team1_score = getMetadataValueOrDefault(metadata, 'Team1Score', '0')
     replay_map = metadata['MapName']['Value']
     replay_date = metadata['Date']['Value']
     players = []

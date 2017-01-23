@@ -15,7 +15,7 @@ frame numer, id, x, y, z, yaw, pitch, roll
 """
 import sys
 import json
-import cgi
+from flask import escape
 import boto3
 
 def update_car_ids(actor_cars, updated):
@@ -52,7 +52,7 @@ def extract_positions(spawned_or_updated, ball_id, actor_cars):
 def print_csv_line(*args):
     line = ""
     for arg in args:
-        line += '"' + cgi.escape(str(arg)) + '",'    
+        line += '"' + escape(str(arg)) + '",'
     print(line[0:len(line)-1])
 
 def print_positions_csv(frame_positions, goal_frames):
@@ -99,7 +99,7 @@ def put_metadata_in_dynamo(replay_json):
     team_size = metadata['TeamSize']['Value']
     team0_score = getMetadataValueOrDefault(metadata, 'Team0Score', '0')
     team1_score = getMetadataValueOrDefault(metadata, 'Team1Score', '0')
-    replay_map = metadata['MapName']['Value']
+    replay_map = getMetadataValueOrDefault(metadata, 'MapName', 'error')
     replay_date = metadata['Date']['Value']
     players = []
     team0_players = set()

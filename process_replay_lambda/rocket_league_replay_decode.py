@@ -15,15 +15,19 @@ frame numer, id, x, y, z, yaw, pitch, roll
 """
 import os
 import sys
-import locale
+import codecs
 import traceback
 import json
 import boto3
 
+from flask import escape
+
 if os.name == 'nt':
     import win_unicode_console
     win_unicode_console.enable()
-
+else:
+    # Get's set to ascii when called from subprocess on Linux
+    sys.stdout = codecs.getwriter("UTF-8")(sys.stdout)
     
 def update_car_ids(actor_cars, updated):
     for actor_id, value in updated.items():                
@@ -60,7 +64,7 @@ def print_csv_line(*args):
     line = ""
     for arg in args:
         try:
-            line += '"' + unicode(arg) + '",'
+            line += '"' + unicode(escape(arg)) + '",'
         except:
             traceback.print_exc(file=sys.stderr)
     print(line[0:len(line)-1])

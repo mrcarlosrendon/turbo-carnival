@@ -30,14 +30,36 @@ DynamoDB tables cost ~ 1$ / month
 
 Access Patterns
 
-By Player Name
+By Player Id (duplicate record for each player in game)
+- Primary Key = online_id
+- Sort Key = replay_date
 
-By Replay Key
+- player_name  (unicode)
+- team (Number)
+- team_size (Number)
+- team0_players (StringSet)
+- team1_players (StringSet)
+- team0_score (Number)
+- team1_score (Number)
+- platform (String - Steam, PS4)
+- ranking (Number)
+- replay_key
+- replay_map
 
-By Map?? (seems lame
 
-By Ranking?
+Global Secondary Index (name-index)   Supports looking up by handle
+- Partition Key = name
+- Attributes: online_id, name
 
-By Num Players
+Consider Global Secondary index based on ranking (i.e. top players, similar skills)
 
-By Most Viewed?
+Supports - Lookup all matches for player_name, online_id in chrono order
+
+Consider Local Secondary index = team_size, replay_map
+
+
+By Replay Key  
+- Primay Key = replay_key
+
+
+By Most Viewed? (If popular - Consider adding to replay key_table as Global Secondary)

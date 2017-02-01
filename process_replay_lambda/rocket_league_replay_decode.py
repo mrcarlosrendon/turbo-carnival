@@ -13,11 +13,18 @@ Output Format:
 frame numer, id, x, y, z, yaw, pitch, roll
 
 """
+import os
 import sys
+import locale
+import traceback
 import json
-from flask import escape
 import boto3
 
+if os.name == 'nt':
+    import win_unicode_console
+    win_unicode_console.enable()
+
+    
 def update_car_ids(actor_cars, updated):
     for actor_id, value in updated.items():                
         if 'Engine.Pawn:PlayerReplicationInfo' in value:
@@ -52,7 +59,10 @@ def extract_positions(spawned_or_updated, ball_id, actor_cars):
 def print_csv_line(*args):
     line = ""
     for arg in args:
-        line += '"' + escape(str(arg)) + '",'
+        try:
+            line += '"' + unicode(arg) + '",'
+        except:
+            traceback.print_exc(file=sys.stderr)
     print(line[0:len(line)-1])
 
 def print_positions_csv(frame_positions, goal_frames):

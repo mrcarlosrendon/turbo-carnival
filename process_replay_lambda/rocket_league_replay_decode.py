@@ -148,7 +148,7 @@ def put_metadata_in_dynamo(replay_json):
             }
         )
     except:
-        sys.stderr.write("trouble writing to dynamodb")
+        traceback.print_exc(file=sys.stderr)
 
 def parse():
     replay_json = json.load(sys.stdin)

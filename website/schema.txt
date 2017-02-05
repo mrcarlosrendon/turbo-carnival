@@ -35,14 +35,14 @@ By Player Id (duplicate record for each player in game)
 - Sort Key = replay_date
 
 - player_name  (unicode)
+- platform (String - Steam, PS4)
+- ranking (Number)
 - team (Number)
 - team_size (Number)
 - team0_players (StringSet)
 - team1_players (StringSet)
 - team0_score (Number)
 - team1_score (Number)
-- platform (String - Steam, PS4)
-- ranking (Number)
 - replay_key
 - replay_map
 

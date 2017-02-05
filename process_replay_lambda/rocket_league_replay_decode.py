@@ -109,7 +109,7 @@ def getMetadataValueOrDefault(metadata, key, default):
 
 def put_metadata_in_dynamo(replay_json):
     metadata = replay_json['Metadata']    
-    replay_id = metadata['Id']['Value']
+    replay_key = metadata['Id']['Value']
     team_size = metadata['TeamSize']['Value']
     team0_score = getMetadataValueOrDefault(metadata, 'Team0Score', '0')
     team1_score = getMetadataValueOrDefault(metadata, 'Team1Score', '0')
@@ -123,20 +123,24 @@ def put_metadata_in_dynamo(replay_json):
         team = player['Team']['Value']
         ranking = player['Score']['Value']
         online_id = player['OnlineID']['Value']
-        platform = player['Platform']['Value']
+        platform = player['Platform']['Value'][1]
         players.append({'name': name, 'team': team, 'ranking': ranking,
                         'online_id': online_id, 'platform': platform})
         if team == 0:
             team0_players.add(name)
         else:
             team1_players.add(name)
+    if len(team0_players) == 0:
+        team0_players = None
+    if len(team1_players) == 1:
+        team1_players = None
         
     dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
     table = dynamodb.Table('turbo-carnival')
     try:
         resp = table.put_item(
             Item={
-                'replay_key': replay_id,
+                'replay_key': replay_key,
                 'team_size': team_size,
                 'team0_score': team0_score,
                 'team1_score': team1_score,
@@ -149,6 +153,29 @@ def put_metadata_in_dynamo(replay_json):
         )
     except:
         traceback.print_exc(file=sys.stderr)
+
+    # TODO, switch to batch requests
+    table = dynamodb.Table('turbo-carnival-players')
+    for player in players:        
+        data={
+                    'online_id': player['online_id'],
+                    'name': player['name'],
+                    'platform': player['platform'],
+                    'ranking': player['ranking'],
+                    'team': player['team'],
+                    'team_size': team_size,
+                    'team0_players': team0_players,
+                    'team1_players': team1_players,
+                    'team0_score': team0_score,
+                    'team1_score': team1_score,
+                    'replay_key': replay_key,
+                    'replay_date': replay_date,
+                    'replay_map': replay_map
+                }
+        try:
+            resp = table.put_item(Item=data)
+        except:
+            traceback.print_exc(file=sys.stderr)
 
 def parse():
     replay_json = json.load(sys.stdin)

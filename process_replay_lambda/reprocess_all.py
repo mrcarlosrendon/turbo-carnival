@@ -49,8 +49,8 @@ i = 0
 for replay in replays:
     sendReplaySNS(replay)
     i = i+1
-    # 60 writes per second with 1 dynamo write capacity unit, say 6 writes per replay
-    # Wait 1 second per 10 replays    
-    if i%10 == 0:
-        time.sleep(1)
-        break
+    # 60 writes per second with 1 dynamo write capacity unit
+    # say 6 writes per replay and also to secondary index
+    # 6 writes per second per replay
+    # Wait 8 seconds per replay to leave a little buffer
+    time.sleep(6)

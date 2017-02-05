@@ -1,20 +1,21 @@
 {% extends "layout.html" %}
 {% block body %}
-<h2>Replays with player handle: {{ handle }}</h2>
-<table>
-    <tr>
-	<th>ID</th>
-	<th>Date</th>
-	<th>Handle</th>
-    </tr>
-    
-    {% for replay in player_replays %}
-    <tr>
-	<td><a href="{{ url_for('player_replays', playerid=replay.online_id ) }}">{{ replay.online_id }}</a></td>
-	<td>{{ replay.name }}</td>
-	<td>{{ replay.replay_date }}</td>
-    </tr>
-    {% endfor %}
-    
-</table>
+<div class="row">
+    <h2>Replays with player handle: {{ handle }}</h2>
+    <table>
+	<tr>
+	    <th>ID</th>
+	    <th>Date</th>
+	    <th>Handle</th>
+	</tr>
+	
+	{% for replay in player_replays %}
+	<tr>
+	    <td><a href="{{ url_for('player_replays', playerid=replay.online_id ) }}">{{ replay.online_id }}</a></td>
+	    <td>{{ replay.name }}</td>
+	    <td>{{ replay.replay_date }}</td>
+	</tr>
+	{% endfor %}
+    </table>
+</div>
 {% endblock %}

@@ -1,12 +1,14 @@
-<html>
-    {% if error %}    
-    <h1>{{ error }}</h1>
-    {% endif %}
-	
+{% extends "layout.html" %}
+{% block body %}
 
-    <p>Replays are stored in: Documents\My Games\Rocket League\TAGame\Demos</p>
-    <form action="" method="post" enctype="multipart/form-data">
-	<input type="file" name="file">
-	<input type="submit" value="Upload">
-    </form>
-</html>
+{% if error %}    
+<h1>{{ error }}</h1>
+{% endif %}
+
+
+<p>Replays are stored in: Documents\My Games\Rocket League\TAGame\Demos</p>
+<form action="" method="post" enctype="multipart/form-data">
+    <input type="file" name="file">
+    <input type="submit" value="Upload">
+</form>
+{% endblock %}

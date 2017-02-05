@@ -17,6 +17,7 @@ SNS_ARN = 'arn:aws:sns:us-west-2:767736770298:turbo-carnival-process-replay'
 
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
 table = dynamodb.Table('turbo-carnival')
+player_table = dynamodb.Table('turbo-carnival-players')
     
 # 2 megs max upload
 application.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
@@ -29,6 +30,26 @@ def index():
         replays = []
         traceback.print_exc(file=sys.stderr)
     return render_template("index.html", replays=replays)
+
+@application.route("/player_replays/<playerid>")
+def player_replays(playerid):
+    key = boto3.dynamodb.conditions.Key('online_id').eq(int(playerid))
+    try:
+        replays = player_table.query(KeyConditionExpression=key)['Items']
+    except:
+        replays = []
+        traceback.print_exc(file=sys.stderr)
+    return render_template("player_replays.html", online_id=playerid, replays=replays)
+
+@application.route("/find_player_by_handle/<handle>")
+def player_handle_lookup(handle):
+    key = boto3.dynamodb.conditions.Key('name').eq(handle)
+    try:
+        player_replays = player_table.query(IndexName='name-index', KeyConditionExpression=key)['Items']
+    except:
+        player_replays = []
+        traceback.print_exc(file=sys.stderr)
+    return render_template("find_player.html", handle=handle, player_replays=player_replays)
 
 def allowed_file(filename):
     return filename.endswith(".replay")

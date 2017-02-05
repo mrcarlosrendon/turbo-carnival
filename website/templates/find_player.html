@@ -1,0 +1,22 @@
+<html>
+    <h1>Visualize your Rocket League replays in your browser in 3D</h1>
+    <h2><a href="upload">Click here to upload a replay</a></h2>
+
+    <h2>Replays with player handle: {{ handle }}</h2>
+    <table>
+	<tr>
+	    <th>ID</th>
+	    <th>Date</th>
+	    <th>Handle</th>
+	</tr>
+
+	{% for replay in player_replays %}
+	<tr>
+	    <td><a href="{{ url_for('player_replays', playerid=replay.online_id ) }}">{{ replay.online_id }}</a></td>
+	    <td>{{ replay.name }}</td>
+	    <td>{{ replay.replay_date }}</td>
+	</tr>
+	{% endfor %}
+	
+    </table>
+</html>

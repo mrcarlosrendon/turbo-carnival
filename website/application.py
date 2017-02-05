@@ -1,4 +1,5 @@
 import sys
+import os
 import traceback
 import time
 import boto3
@@ -21,6 +22,10 @@ player_table = dynamodb.Table('turbo-carnival-players')
     
 # 2 megs max upload
 application.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
+
+# Don't cache templates in dev
+if os.name == 'nt':
+    application.config['TEMPLATES_AUTO_RELOAD'] = True    
 
 @application.route("/")
 def index():

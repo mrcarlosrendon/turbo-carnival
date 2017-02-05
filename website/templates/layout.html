@@ -5,12 +5,42 @@
 	<meta http-equiv="x-ua-compatible" content="ie=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<title>3D Rocket League Replays</title>
+	<title>Turbo Carnival - 3D Rocket League Replays</title>
+
+	<link rel="stylesheet" href="/static/css/foundation.min.css"/>
+	<link rel="stylesheet" href="/static/css/base.css"/>
     </head>
-    <h1>Visualize your Rocket League replays in your browser in 3D</h1>
-    <h2><a href="upload">Click here to upload a replay</a></h2>
+    <body>
+	<div class="row">
+	    <h1>Turbo Carnival - 3D Replays in your browser</h1>
+	</div>
 
-    {% block body %}
-    {% endblock %}
+	<p><a href="/">Home</a> | <a href="upload">Click here to upload a replay</a></p>
+	<script>
+	 function findPlayer() {
+	     var playerName = document.getElementById("playerName").value;
+	     var newLocation = window.location.protocol + '//' + window.location.host + "/find_player_by_handle/"+ playerName;
+	     window.location.href = newLocation;
+	     return false;
+	 }
+	</script>
+	<form onsubmit="return findPlayer();">
+	    <input id="playerName"/>
+	    <input type="button" value="Find Player Replays" onclick="return findPlayer();"/>
+	</form>
+	<hr>
+	
+	{% block body %}
+	{% endblock %}
 
+	<hr>
+	<footer>
+	    <a href="https://www.surveymonkey.com/r/MFKGGDD">Let me know how to make this beter!</a>
+	    <br/>
+	    <a href="https://github.com/mrcarlosrendon/turbo-carnival">Tech Savy? Contribute on GitHub</a>
+	</footer>
+
+	<script src="/static/js/jquery.js"/>
+	<script src="/static/js/foundation.min.js"/>
+    </body>
 </html>

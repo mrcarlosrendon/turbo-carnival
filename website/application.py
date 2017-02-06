@@ -40,7 +40,7 @@ def index():
 def player_replays(playerid):
     key = boto3.dynamodb.conditions.Key('online_id').eq(int(playerid))
     try:
-        replays = player_table.query(KeyConditionExpression=key)['Items']
+        replays = player_table.query(KeyConditionExpression=key, ScanIndexForward=False)['Items']
     except:
         replays = []
         traceback.print_exc(file=sys.stderr)

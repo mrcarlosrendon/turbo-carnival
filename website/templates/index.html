@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 <div class="row">
-    <h2>View replays:</h2>
+    <h2>Sample Replays</h2>
     <table>
 	<tr>
 	    <th>ID</th>
@@ -16,12 +16,12 @@
 	{% for replay in replays %}
 	<tr>
 	    <td><a href="{{ url_for('view_replay', insecure_filename=replay.replay_key) }}">{{ replay.replay_key }}</a></td>
-	    <td>{{ replay.replay_date }}</td>
+	    <td>{{ replay.replay_date[0:10] }}</td>
 	    <td>{{ replay.team_size }}v{{ replay.team_size }}</td>
-	    <td>{{ replay.team0_score }} - {{ replay.team1_score }}</td>
+	    <td><span style="color: blue">{{ replay.team0_score }}</span> - <span style="color:orange">{{ replay.team1_score }}</span></td>
 	    <td>{{ replay.replay_map }}</td>
-	    <td>{% for player in replay.team0_players %}{{player}}, {% endfor %}</td>
-	    <td>{% for player in replay.team1_players %}{{player}}, {% endfor %}</td>
+	    <td>{% if replay.team0_players %}{% for player in replay.team0_players %}<a href="{{ url_for('player_handle_lookup', handle=player) }}">{{player}}</a>, {% endfor %}{% endif %}</td>
+	    <td>{% if replay.team1_players %}{% for player in replay.team1_players %}<a href="{{ url_for('player_handle_lookup', handle=player) }}">{{player}}</a>, {% endfor %}{% endif %}</td>
 	</tr>
 	{% endfor %}    
     </table>

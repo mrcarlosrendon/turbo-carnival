@@ -11,7 +11,6 @@
     <body>
 
 	<div style="position: absolute; color: white; font-family: sans-serif">
-	    <a href="/">Upload another</a>
 	    <h1 id="score">Score: 0-0</h1>
 	    <h1 id="frame_counter">Frame: </h1>
 	    <h2 id="last_scorer">Last Scorer: </h2>
@@ -44,6 +43,8 @@
 	 var objects = {};
 	 var geometries = {};
 
+	 var cameraMode = 'top';
+	 var cameraFocus = 'ball';
 	 var watchTopOfBallMode = false;
 	 var watchBallCenterMode = true;
 
@@ -123,8 +124,25 @@ Hold <- ->  forward or back to last keyframe
 	 function checkMouse(e) {
 	     // Left Click
 	     if (e.button === 0) {
-		 // TODO change camera focus
-		 console.log("left click");
+		 // change camera focus		 
+		 var next = false;
+		 var set = false;
+		 for (focus in objects) {
+		     if (next === true) {
+			 cameraFocus = focus;
+			 set = true;
+			 break;
+		     }
+		     if (focus === cameraFocus) {
+			 next = true;
+		     }		     
+		 }
+		 if (!set) {
+		     for (focus in objects) {
+			 cameraFocus = focus;
+			 break;
+		     }
+		 }
 	     }
 	     // Right Click
 	     else if (e.button === 2) {
@@ -234,7 +252,9 @@ Hold <- ->  forward or back to last keyframe
 	     document.body.appendChild( renderer.domElement );
   	     for(item in data) {
 		 var line = data[item];
-		 objects[line.id] = data[item];
+		 if (line.id !== undefined) {
+		     objects[line.id] = data[item];
+		 }
 	     }
 	     camera.position.x = 1000;
 	     camera.position.z = 1000;
@@ -260,7 +280,7 @@ Hold <- ->  forward or back to last keyframe
 		     if (obj !== undefined) {
 			 obj.position.set(datum.x, datum.y, datum.z);
 			 obj.rotation.set(datum.yaw*Math.PI, datum.roll*Math.PI, datum.pitch*Math.PI);
-			 if (datum.id === 'ball') {
+			 if (datum.id === cameraFocus) {
 			     if (watchTopOfBallMode) {
 				 camera.position.set(datum.x, datum.y, 4000);
 				 camera.rotation.set(0, 0, 0);

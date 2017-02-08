@@ -14,14 +14,20 @@
 	    <a href="/">Upload another</a>
 	    <h1 id="score">Score: 0-0</h1>
 	    <h1 id="frame_counter">Frame: </h1>
-	    <h2 id="last_scorer">Last Scorer: </h2>	    
-	    <p>Controls: </p>
-	    <p>w - watch from center of arena at ground level</p>
-	    <p>t - watch top down following ball</p>
-	    <p>r - restart from beginning</p>
-	    <p>space - pause/resume</p>
-	    <p>right arrow - advance one frame</p>
-	    <p>left arrow - reverse one frame</p>
+	    <h2 id="last_scorer">Last Scorer: </h2>
+	    <p>Press i to see controls
+		<div id="controlInstructions" style="display: none">
+		    <p>Controls: </p>
+		    <p>left click - change camera target</p>
+		    <p>right click - change camera mode</p>
+		    <p>shift - pause/resume</p>
+		    <p>right arrow - fast forward</p>
+		    <p>left arrow - rewind</p>
+		    <p>w - go towards camera focus</p>
+		    <p>s - go away from camera focus</p>
+		    <p>a - rotate left around camera focus</p>
+		    <p>d - rotate right around camera focus</p>
+		</div>
 	</div>
 	
 	<script src="/static/js/three.js"></script>
@@ -87,25 +93,71 @@
 	 var last_scorer_text = d3.select("#last_scorer");
 	 var frame_data;
 	 var frame_by_frame_mode = false;
-	 
+
+
+	 /*
+
+	Game Replay Control Notes:
+
+Pause Unpause -> LSHIFT
+Hold Pause -> Circle menu to select speed
+
+Hold left click -> Circle menu to Pick camera target
+Press left click -> next camera target
+
+Hold right click -> Circle menu to Pick camera attach type ( autocam, hard, soft, fly )
+Press right click -> next camera attach type
+
+wasd -> move camera
+w -> towards camera focus (bounded by box)
+s -> away from camera focus (bounded by box)
+a, d -> rotate around camera focus
+
+<- ->  forward back in 5 second increments
+Hold <- ->  forward or back to last keyframe
+
+	  */
+	 // Disable right click context menu, because we'll use right click for UI
+	 document.addEventListener('contextmenu', event => event.preventDefault());
+	 document.onclick = checkMouse;
+	 function checkMouse(e) {
+	     // Left Click
+	     if (e.button === 0) {
+		 // TODO change camera focus
+		 console.log("left click");
+	     }
+	     // Right Click
+	     else if (e.button === 2) {
+		 // TODO change camera attach type
+		 console.log("right click");
+
+		 if (watchBallCenterMode) {
+		     watchTopOfBallMode = true;
+		     watchBallCenterMode = false;
+		 }
+		 else {
+		     watchTopOfBallMode = false;
+		     watchBallCenterMode = true;
+		 }		 
+	     }
+	 }
 	 document.onkeydown = checkKey;
 	 function checkKey(e) {
 	     if (e.keyCode === 37) {
 		 // left arrow
-		 frame_by_frame_mode = true;
+		 //frame_by_frame_mode = true;
 		 if (frame > 0) {
-		     frame--;
+		     frame = frame - (30*5);
 		 }
 	     }
 	     else if (e.keyCode === 39) {
 		 // right arrow
-		 frame_by_frame_mode = true;
+		 //frame_by_frame_mode = true;
 		 if (frame < max_frame) {
-		     frame++;
+		     frame = frame + (30*5);
 		 }
 	     }
-	     else if (e.keyCode === 32) {
-		 // space 
+	     else if (e.shiftKey) {
 		 if (frame_by_frame_mode) {
 		     frame_by_frame_mode = false;
 		 }
@@ -113,15 +165,32 @@
 		     frame_by_frame_mode = true;
 		 }
 	     }
-	     else if (e.keyCode === 87) {
-		 // w
-		 watchBallCenterMode = true;
-		 watchTopOfBallMode = false;
+	     else if (e.keyCode === 73) {
+		 // i
+		 var controlInstructions = document.getElementById("controlInstructions");
+		 if (controlInstructions.style.display === "none") {
+		     controlInstructions.style.display = "block";
+		 }
+		 else {
+		     controlInstructions.style.display = "none";
+		 }
+	     }
+	     else if (e.keyCode === 65) {
+		 // a
+		 // TODO rotate left around camera focus		 
+	     }
+	     else if (e.keyCode === 68) {
+		 // d
+		 // TODO rotate right around camera focus
 	     }
 	     else if (e.keyCode === 84) {
-		 // t
-		 watchTopOfBallMode = true;
-		 watchBallCenterMode = false;
+		 // s
+		 // TODO move away from camera focus
+	     }
+	     else if (e.keyCode === 87) {
+		 // w
+		 // TODO move towards camera focus
+
 	     }
 	     else if (e.keyCode === 82) {
 		 // r

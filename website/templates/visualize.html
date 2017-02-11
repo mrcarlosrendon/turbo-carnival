@@ -54,6 +54,7 @@
 
 	 var cameraMode = 'top';
 	 var cameraFocus = 'ball';
+	 var cameraDistance = 1000;
 	 var watchTopOfBallMode = false;
 	 var watchBallCenterMode = true;
 
@@ -287,8 +288,8 @@ Hold <- ->  forward or back to last keyframe
 		     items_in_frame[datum.id] = true;
 		     var obj = geometries[datum.id];
 		     if (obj !== undefined) {
-			 obj.position.set(datum.x, datum.y, datum.z);
-			 obj.rotation.set(datum.yaw*Math.PI, datum.roll*Math.PI, datum.pitch*Math.PI);
+			 obj.position.set(parseInt(datum.x), parseInt(datum.y), parseInt(datum.z));
+			 obj.rotation.set(parseFloat(datum.yaw)*Math.PI, parseFloat(datum.roll)*Math.PI, parseFloat(datum.pitch)*Math.PI);
 			 if (datum.id === cameraFocus) {
 			     if (watchTopOfBallMode) {
 				 camera.position.set(datum.x, datum.y, 4000);

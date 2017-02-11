@@ -211,14 +211,21 @@ Hold <- ->  forward or back to last keyframe
 		 // d
 		 // TODO rotate right around camera focus
 	     }
-	     else if (e.keyCode === 84) {
+	     else if (e.keyCode === 83) {
 		 // s
 		 // TODO move away from camera focus
+		 if (cameraDistance < 20000) {
+		     cameraDistance = cameraDistance + 100;
+		 }
+		 console.log("distance " + cameraDistance);
 	     }
 	     else if (e.keyCode === 87) {
 		 // w
 		 // TODO move towards camera focus
-
+		 if (cameraDistance > 200) {
+		     cameraDistance = cameraDistance - 100;
+		 }		 
+		 console.log("distance " + cameraDistance);
 	     }
 	     else if (e.keyCode === 82) {
 		 // r
@@ -292,8 +299,10 @@ Hold <- ->  forward or back to last keyframe
 			 obj.rotation.set(parseFloat(datum.yaw)*Math.PI, parseFloat(datum.roll)*Math.PI, parseFloat(datum.pitch)*Math.PI);
 			 if (datum.id === cameraFocus) {
 			     if (watchTopOfBallMode) {
-				 camera.position.set(datum.x, datum.y, 4000);
-				 camera.rotation.set(0, 0, 0);
+				 camera.position.set(obj.position.x + cameraDistance, obj.position.y + cameraDistance, obj.position.z + cameraDistance);
+				 camera.lookAt(obj.position);
+				 //console.log("obj " + obj.position.toArray() + " camera " + camera.position.toArray()); 
+				 //camera.rotation.set(0, 0, 0);
 			     }
 			     else if (watchBallCenterMode) {
 				 camera.position.set(0, 0, 1000);

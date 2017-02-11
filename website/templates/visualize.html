@@ -42,7 +42,7 @@
 	<script src="/static/js/ColladaLoader2.js"></script>
 	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<script>
-
+	 "use strict";
 	 d3.csv("/get_replay_data/{{ filename }}", function(error, data){
 	     draw(data);
 	 });
@@ -259,7 +259,7 @@ Hold <- ->  forward or back to last keyframe
 	     max_frame = d3.max(data, function(d) { return parseInt(d.frame) });	     
 	     renderer.setSize( window.innerWidth - 5, window.innerHeight - 5);
 	     document.body.appendChild( renderer.domElement );
-  	     for(item in data) {
+  	     for(var item in data) {
 		 var line = data[item];
 		 if (line.id !== undefined) {
 		     objects[line.id] = data[item];
@@ -280,12 +280,12 @@ Hold <- ->  forward or back to last keyframe
 	     requestAnimationFrame( render );
 
 	     var items_in_frame = {}
-	     for(item in frame_data) {
+	     for(var item in frame_data) {
 		 // Yes I know, super inefficent
 		 if (frame_data[item].frame == frame) {
-		     datum = frame_data[item];
+		     var datum = frame_data[item];
 		     items_in_frame[datum.id] = true;
-		     obj = geometries[datum.id];
+		     var obj = geometries[datum.id];
 		     if (obj !== undefined) {
 			 obj.position.set(datum.x, datum.y, datum.z);
 			 obj.rotation.set(datum.yaw*Math.PI, datum.roll*Math.PI, datum.pitch*Math.PI);
@@ -317,7 +317,7 @@ Hold <- ->  forward or back to last keyframe
 		 }
 	     }
 
-	     for (geo in geometries) {
+	     for (var geo in geometries) {
 		 if (!(geo in items_in_frame)) {
 		     scene.remove(geo);
 		     // console.log("Removed " + geo);

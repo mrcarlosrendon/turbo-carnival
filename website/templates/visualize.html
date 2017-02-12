@@ -6,6 +6,33 @@
 	<style>
 	 body { margin: 0; }
 	 canvas { width: 100%; height: 100% }
+	 #scoreHeader {
+	     position: absolute;
+	     left: 50%;
+	     transform: translateX(-50%);
+	     text-align: center;
+	     color: white;
+	     font-family: sans-serif;
+	     overflow: hidden;
+	 }
+	 .horizontalBoxes {
+	     overflow: hidden;
+	     width: 600px;
+	 }
+	 .horizDiv {
+	     float: left;
+	     width: 100px;
+	 }
+	 #game_clock {
+	     
+	 }
+	 #blueScore {
+	     color: blue;
+	 }
+	 #orangeScore {
+	     color: orange;
+	 }
+	 
 	</style>
 
 	<script>
@@ -19,9 +46,15 @@
     </head>
     <body>
 
+	<div id="scoreHeader">
+	    <div id="horizontalBoxes">
+		<div class="horizDiv"><h1 id="blueScore">0</h1></div>
+		<div class="horizDiv"><h1 id="game_clock"></h1></div>
+		<div class="horizDiv"><h1 id="orangeScore">0</h1></div>
+	    </div>
+	</div>
+
 	<div style="position: absolute; color: white; font-family: sans-serif">
-	    <h1 id="score">Score: 0-0</h1>
-	    <h1 id="frame_counter">Frame: </h1>
 	    <h2 id="last_scorer">Last Scorer: </h2>
 	    <p>Press i to see controls
 		<div id="controlInstructions" style="display: none">
@@ -99,8 +132,9 @@
 	 goal2.position.set(0, -(5113+500), 250);
 	 scene.add(goal2);
 
-	 var frame_counter = d3.select("#frame_counter");
-	 var score_text = d3.select("#score");
+	 var game_clock = d3.select("#game_clock");
+	 var blue_score_text = d3.select("#blueScore");
+	 var orange_score_text = d3.select("#orangeScore");
 	 var last_scorer_text = d3.select("#last_scorer");
 	 var frame_data;
 	 var frame_by_frame_mode = false;
@@ -329,7 +363,8 @@ Hold <- ->  forward or back to last keyframe
 
 		     if (datum['scorer'] !== '') {
 			 last_scorer_text.html("Last Scorer: " + datum['scorer']);
-			 score_text.html("Score: " + datum['team1score'] + "-" + datum['team2score']);		 
+			 blue_score_text.html(datum['team1score']);
+			 orange_score_text.html(datum['team2score']);
 		     }
 		 }
 	     }
@@ -342,11 +377,16 @@ Hold <- ->  forward or back to last keyframe
 	     }
 
 	     if (frame_by_frame_mode) {
-		 frame_counter.html("Frame: " + frame);
+
 
 	     }
 	     else if (frame % 30 === 0) {
-		 frame_counter.html("Frame: " + frame);
+		 var secs = frame/30;
+		 var mins = Math.floor(secs/60);
+		 secs = secs % 60;
+		 var secsStr = "00" + secs;
+		 secsStr = secsStr.substr(secsStr.length - 2);
+		 game_clock.html(mins + ":" + secsStr);
 	     }
 	     renderer.render( scene, camera );
 	     if (!frame_by_frame_mode && frame < max_frame) {

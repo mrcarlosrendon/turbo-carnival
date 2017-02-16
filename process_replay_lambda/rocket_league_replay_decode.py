@@ -232,7 +232,6 @@ def parse():
                     team = int(value['Name'].replace("Archetypes.Teams.Team", ""))
                     player_actor_id = team_actor_player[int(actor_id)]
                     player_teams[player_actor_id] = team
-                    print 
 
             this_frame_positions.append(
                 extract_positions(frame['Spawned'], ball_id, player_names, player_teams, actor_cars))

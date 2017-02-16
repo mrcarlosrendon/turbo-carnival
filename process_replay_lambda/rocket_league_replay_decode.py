@@ -29,11 +29,14 @@ else:
     # Get's set to ascii when called from subprocess on Linux
     sys.stdout = codecs.getwriter("UTF-8")(sys.stdout)
     
-def update_car_ids(actor_cars, updated):
+def update_car_ids_and_names(actor_cars, player_names, updated):
     for actor_id, value in updated.items():                
         if 'Engine.Pawn:PlayerReplicationInfo' in value:
             player_id = value['Engine.Pawn:PlayerReplicationInfo']['Value']['Int']
             actor_cars[player_id] = actor_id
+        if 'Engine.PlayerReplicationInfo:PlayerName' in value:
+            name = value['Engine.PlayerReplicationInfo:PlayerName']['Value']
+            player_names[int(actor_id)] = name
 
 def extract_positions(spawned_or_updated, ball_id, actor_cars):
     positions = []
@@ -69,7 +72,7 @@ def print_csv_line(*args):
             traceback.print_exc(file=sys.stderr)
     print(line[0:len(line)-1])
 
-def print_positions_csv(frame_positions, goal_frames):
+def print_positions_csv(frame_positions, goal_frames, player_names):
     team1score = 0
     team2score = 0
     print_csv_line("frame", "id", "x", "y", "z", "yaw", "pitch", "roll", "scorer", "team1score", "team2score")
@@ -83,9 +86,9 @@ def print_positions_csv(frame_positions, goal_frames):
             else:
                 team2score = team2score + 1
         for actor_pos in frame_pos:
-            for actor in actor_pos:                
+            for actor in actor_pos:
                 print_csv_line(
-                    frame, actor['id'], \
+                    frame, player_names[actor['id']], \
                     actor['x'], actor['y'], actor['z'], \
                     actor['yaw'], actor['pitch'], actor['roll'], \
                     scorer, team1score, team2score
@@ -189,6 +192,8 @@ def parse():
     actor_players = {}    
     # player_id -> actor_id
     actor_cars = {}
+    # actor_id -> player's String name
+    player_names = {'ball':'ball'}
     # which actor_id is the ball
     ball_id = -1
     # positions of all items for each frame
@@ -200,7 +205,7 @@ def parse():
         this_frame_positions = []
 
         if not frame.get('Updated') == None:
-            update_car_ids(actor_cars, frame['Updated'])
+            update_car_ids_and_names(actor_cars, player_names, frame['Updated'])
 
         if not frame.get('Spawned') == None:
             for actor_id, value in frame['Spawned'].items():
@@ -226,6 +231,6 @@ def parse():
                 
         frame_positions.append(this_frame_positions)
 
-    print_positions_csv(frame_positions, goal_frames)
+    print_positions_csv(frame_positions, goal_frames, player_names)
 
 parse()

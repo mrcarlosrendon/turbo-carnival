@@ -29,7 +29,7 @@ else:
     # Get's set to ascii when called from subprocess on Linux
     sys.stdout = codecs.getwriter("UTF-8")(sys.stdout)
     
-def update_car_ids_and_names(actor_cars, player_names, updated):
+def process_updates(actor_cars, player_names, team_actor_player, updated):
     for actor_id, value in updated.items():                
         if 'Engine.Pawn:PlayerReplicationInfo' in value:
             player_id = value['Engine.Pawn:PlayerReplicationInfo']['Value']['Int']
@@ -37,8 +37,11 @@ def update_car_ids_and_names(actor_cars, player_names, updated):
         if 'Engine.PlayerReplicationInfo:PlayerName' in value:
             name = value['Engine.PlayerReplicationInfo:PlayerName']['Value']
             player_names[int(actor_id)] = name
+        if 'Engine.PlayerReplicationInfo:Team' in value:
+            team_actor_id = value['Engine.PlayerReplicationInfo:Team']['Value']['Int']
+            team_actor_player[int(team_actor_id)] = int(actor_id)
 
-def extract_positions(spawned_or_updated, ball_id, actor_cars):
+def extract_positions(spawned_or_updated, ball_id, player_names, player_teams, actor_cars):
     positions = []
     for actor_id, value in spawned_or_updated.items():
         if 'TAGame.RBActor_TA:ReplicatedRBState' in value:
@@ -46,17 +49,20 @@ def extract_positions(spawned_or_updated, ball_id, actor_cars):
             rotation = value['TAGame.RBActor_TA:ReplicatedRBState']['Value']['Rotation']
 
             descriptive_id = actor_id
+            team = -1
 
             for player_actor_id, car_actor_id in actor_cars.items():
                 if actor_id == car_actor_id:
-                    descriptive_id = player_actor_id
+                    descriptive_id = player_names[player_actor_id]
+                    team = player_teams[player_actor_id]
                     break
 
             if ball_id == actor_id:
                 descriptive_id = 'ball'
-            
+
             pos_dict = {}
-            pos_dict['id'] = descriptive_id
+            pos_dict['id'] = descriptive_id            
+            pos_dict['team'] = team
             pos_dict['x'], pos_dict['y'], pos_dict['z'] = position
             pos_dict['yaw'], pos_dict['pitch'], pos_dict['roll'] = rotation
 
@@ -72,10 +78,10 @@ def print_csv_line(*args):
             traceback.print_exc(file=sys.stderr)
     print(line[0:len(line)-1])
 
-def print_positions_csv(frame_positions, goal_frames, player_names):
+def print_positions_csv(frame_positions, goal_frames):
     team1score = 0
     team2score = 0
-    print_csv_line("frame", "id", "x", "y", "z", "yaw", "pitch", "roll", "scorer", "team1score", "team2score")
+    print_csv_line("frame", "id", "team", "x", "y", "z", "yaw", "pitch", "roll", "scorer", "team1score", "team2score")
     for frame, frame_pos in enumerate(frame_positions):
         scorer = ''        
         if goal_frames.has_key(frame):
@@ -88,7 +94,7 @@ def print_positions_csv(frame_positions, goal_frames, player_names):
         for actor_pos in frame_pos:
             for actor in actor_pos:
                 print_csv_line(
-                    frame, player_names[actor['id']], \
+                    frame, actor['id'], actor['team'], \
                     actor['x'], actor['y'], actor['z'], \
                     actor['yaw'], actor['pitch'], actor['roll'], \
                     scorer, team1score, team2score
@@ -194,6 +200,10 @@ def parse():
     actor_cars = {}
     # actor_id -> player's String name
     player_names = {'ball':'ball'}
+    # team_actor_id -> player_actor_id 
+    team_actor_player = {}
+    # player_actor_id -> team
+    player_teams = {}
     # which actor_id is the ball
     ball_id = -1
     # positions of all items for each frame
@@ -205,7 +215,7 @@ def parse():
         this_frame_positions = []
 
         if not frame.get('Updated') == None:
-            update_car_ids_and_names(actor_cars, player_names, frame['Updated'])
+            process_updates(actor_cars, player_names, team_actor_player, frame['Updated'])
 
         if not frame.get('Spawned') == None:
             for actor_id, value in frame['Spawned'].items():
@@ -218,8 +228,14 @@ def parse():
                 if value['Class'] == 'TAGame.PRI_TA':
                     actor_players[actor_id] = value
 
+                if value['Class'] == 'TAGame.Team_Soccar_TA':
+                    team = int(value['Name'].replace("Archetypes.Teams.Team", ""))
+                    player_actor_id = team_actor_player[int(actor_id)]
+                    player_teams[player_actor_id] = team
+                    print 
+
             this_frame_positions.append(
-                extract_positions(frame['Spawned'], ball_id, actor_cars))
+                extract_positions(frame['Spawned'], ball_id, player_names, player_teams, actor_cars))
 
         if not frame.get('Destroyed') == None:
             for actor_id in frame['Destroyed']:
@@ -227,10 +243,10 @@ def parse():
 
         if not frame.get('Updated') == None:            
             this_frame_positions.append(
-                extract_positions(frame['Updated'], ball_id, actor_cars))
+                extract_positions(frame['Updated'], ball_id, player_names, player_teams, actor_cars))
                 
         frame_positions.append(this_frame_positions)
 
-    print_positions_csv(frame_positions, goal_frames, player_names)
+    print_positions_csv(frame_positions, goal_frames)
 
 parse()

@@ -54,7 +54,10 @@ def extract_positions(spawned_or_updated, ball_id, player_names, player_teams, a
             for player_actor_id, car_actor_id in actor_cars.items():
                 if actor_id == car_actor_id:
                     descriptive_id = player_names[player_actor_id]
-                    team = player_teams[player_actor_id]
+                    if player_teams.has_key(player_actor_id):
+                        # Note seen replays where team isn't defined for all players.
+                        # Example D571A13F404170674A310B9489CB68C9.replay
+                        team = player_teams[player_actor_id]
                     break
 
             if ball_id == actor_id:

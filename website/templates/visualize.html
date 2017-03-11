@@ -268,11 +268,17 @@ Hold <- ->  forward or back to last keyframe
 	     }
 	 }
 
-	 function createPlayerCar(id) {
-	     //var geometry = new THREE.BoxGeometry( 200, 100, 50 );
-	     //var material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
-	     //var cube = new THREE.Mesh( geometry, material );
-
+	 function createPlayerCar(id, team) {
+	     var team0Color = "blue";
+	     var team1Color = "orange";
+	     var unknownColor = "purple";
+	     var color = unknownColor;
+	     if (team === '0') {
+		 color = team0Color;
+	     }
+	     if (team === '1') {
+		 color = team1Color;
+	     }
 
 	     var loader = new THREE.ColladaLoader();
 	     var car_model;
@@ -281,7 +287,7 @@ Hold <- ->  forward or back to last keyframe
 		 
 		 car_model = collada.scene;
 		 for (var i = 0; i < car_model.children.length; i++) {
-		     car_model.children[i].material = new THREE.MeshLambertMaterial( { color: 0xff0000 });
+		     car_model.children[i].material = new THREE.MeshLambertMaterial( { color: color });
 		 }
 		 car_model.scale.x = car_model.scale.y = car_model.scale.z = 40;
 		 geometries[id] = car_model;
@@ -356,7 +362,7 @@ Hold <- ->  forward or back to last keyframe
 			     createBall(datum.id);
 			 }
 			 else {
-			     createPlayerCar(datum.id);
+			     createPlayerCar(datum.id, datum.team);
 			 }
 			 console.log("Created: " + datum.id);
 		     }

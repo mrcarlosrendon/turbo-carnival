@@ -312,9 +312,10 @@ Hold <- ->  forward or back to last keyframe
 		 if (line.id !== undefined) {
 		     objects[line.id] = data[item];
 		 }
-	     }
-	     camera.position.x = 1000;
-	     camera.position.z = 1000;
+	     }	     
+	     camera.position.x = 0;
+	     camera.position.y = 0;
+	     camera.position.z = 7000;
 	     render();
 	 }
 

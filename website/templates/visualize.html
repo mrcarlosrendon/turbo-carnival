@@ -326,9 +326,6 @@ Hold <- ->  forward or back to last keyframe
 	 function preProcessFrameDictionary(data) {
 	     var localFrame = 0;
 	     for (var item in data) {
-		 if (localFrame === 900) {
-		     console.log("1000");
-		 }
 		 var itemFrame = parseInt(data[item].frame);
 		 var process = false;
 		 if (itemFrame == localFrame) {
@@ -337,9 +334,6 @@ Hold <- ->  forward or back to last keyframe
 		 else if (itemFrame > localFrame) {
 		     localFrame = itemFrame;
 		     process = true;
-		     if (localFrame % 100 == 0) {
-			 console.log("process " + localFrame);
-		     }
 		 }
 		 if (process) {
 		     if (frame_dict[localFrame] === undefined) {

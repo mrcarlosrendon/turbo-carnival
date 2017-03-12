@@ -15,6 +15,18 @@
 	     font-family: sans-serif;
 	     overflow: hidden;
 	 }
+	 #controls {
+	     position: absolute;
+	     left: 2%;
+	     color: white;
+	     font-family: sans-serif;
+	 }
+	 #cameraStatus {
+	     position: absolute;
+	     right: 2%;
+	     color: white;
+	     font-family: sans-serif;
+	 }
 	 .horizontalBoxes {
 	     overflow: hidden;
 	     width: 600px;
@@ -54,7 +66,11 @@
 	    </div>
 	</div>
 
-	<div style="position: absolute; color: white; font-family: sans-serif">
+	<div id="cameraStatus">
+	    <h2 id="watching"></h2>
+	</div>
+	
+	<div id="controls">
 	    <h2 id="last_scorer">Last Scorer: </h2>
 	    <p>Press i to see controls
 		<div id="controlInstructions" style="display: none">
@@ -136,6 +152,8 @@
 	 var blue_score_text = d3.select("#blueScore");
 	 var orange_score_text = d3.select("#orangeScore");
 	 var last_scorer_text = d3.select("#last_scorer");
+	 var watching_text = d3.select("#watching");
+	 watching_text.html("Watching: " + cameraFocus);
 	 var frame_data;
 	 var frame_by_frame_mode = false;
 
@@ -174,6 +192,7 @@ Hold <- ->  forward or back to last keyframe
 		 for (focus in objects) {
 		     if (next === true) {
 			 cameraFocus = focus;
+			 watching_text.html("Watching: " + cameraFocus);
 			 set = true;
 			 break;
 		     }
@@ -184,6 +203,7 @@ Hold <- ->  forward or back to last keyframe
 		 if (!set) {
 		     for (focus in objects) {
 			 cameraFocus = focus;
+			 watching_text.html("Watching: " + cameraFocus);
 			 break;
 		     }
 		 }
@@ -283,13 +303,13 @@ Hold <- ->  forward or back to last keyframe
 	     var loader = new THREE.ColladaLoader();
 	     var car_model;
 	     loader.options.convertUpAxis = true;
-	     loader.load('/static/models/potato_car.dae', function colladaReady( collada ) {
-		 
+	     loader.load('/static/models/potato_car.dae', function colladaReady( collada ) {		 
 		 car_model = collada.scene;
 		 for (var i = 0; i < car_model.children.length; i++) {
 		     car_model.children[i].material = new THREE.MeshLambertMaterial( { color: color });
 		 }
 		 car_model.scale.x = car_model.scale.y = car_model.scale.z = 40;
+		 car_model.userData['player_name'] = id;
 		 geometries[id] = car_model;
 		 scene.add( car_model );
 	     });
@@ -373,6 +393,7 @@ Hold <- ->  forward or back to last keyframe
 			 blue_score_text.html(datum['team1score']);
 			 orange_score_text.html(datum['team2score']);
 		     }
+		     break;
 		 }
 	     }
 

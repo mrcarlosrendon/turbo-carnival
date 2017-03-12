@@ -29,7 +29,7 @@ else:
     # Get's set to ascii when called from subprocess on Linux
     sys.stdout = codecs.getwriter("UTF-8")(sys.stdout)
     
-def process_updates(actor_cars, player_names, team_actor_player, updated):
+def process_updates(actor_cars, player_names, team_actor_player, updated, players, player_teams):
     for actor_id, value in updated.items():                
         if 'Engine.Pawn:PlayerReplicationInfo' in value:
             player_id = value['Engine.Pawn:PlayerReplicationInfo']['Value']['Int']
@@ -37,6 +37,10 @@ def process_updates(actor_cars, player_names, team_actor_player, updated):
         if 'Engine.PlayerReplicationInfo:PlayerName' in value:
             name = value['Engine.PlayerReplicationInfo:PlayerName']['Value']
             player_names[int(actor_id)] = name
+            for player in players:
+                if player['name'] == name:
+                    team = player['team']
+                    player_teams[int(actor_id)] = player['team']
         if 'Engine.PlayerReplicationInfo:Team' in value:
             team_actor_id = value['Engine.PlayerReplicationInfo:Team']['Value']['Int']
             team_actor_player[int(team_actor_id)] = int(actor_id)
@@ -54,10 +58,7 @@ def extract_positions(spawned_or_updated, ball_id, player_names, player_teams, a
             for player_actor_id, car_actor_id in actor_cars.items():
                 if actor_id == car_actor_id:
                     descriptive_id = player_names[player_actor_id]
-                    if player_teams.has_key(player_actor_id):
-                        # Note seen replays where team isn't defined for all players.
-                        # Example D571A13F404170674A310B9489CB68C9.replay
-                        team = player_teams[player_actor_id]
+                    team = player_teams[player_actor_id]
                     break
 
             if ball_id == actor_id:
@@ -103,6 +104,19 @@ def print_positions_csv(frame_positions, goal_frames):
                     scorer, team1score, team2score
                 )
 
+def extract_player_info_from_metadata(replay_json):
+    metadata = replay_json['Metadata']
+    players = []
+    for player in metadata['PlayerStats']['Value']:
+        name = player['Name']['Value']
+        team = player['Team']['Value']
+        ranking = player['Score']['Value']
+        online_id = int(player['OnlineID']['Value'])
+        platform = player['Platform']['Value'][1]
+        players.append({'name': name, 'team': team, 'ranking': ranking,
+                        'online_id': online_id, 'platform': platform})
+    return players    
+    
 def extract_goal_frames(replay_json):
     goal_frames = {}
     goals_json = replay_json['Metadata']['Goals']['Value']
@@ -127,31 +141,24 @@ def put_metadata_in_dynamo(replay_json):
     team1_score = getMetadataValueOrDefault(metadata, 'Team1Score', '0')
     replay_map = getMetadataValueOrDefault(metadata, 'MapName', 'error')
     replay_date = metadata['Date']['Value']
-    players = []
     team0_players = set()
     team1_players = set()
-    for player in metadata['PlayerStats']['Value']:
-        name = player['Name']['Value']
-        team = player['Team']['Value']
-        ranking = player['Score']['Value']
-        online_id = player['OnlineID']['Value']
-        platform = player['Platform']['Value'][1]
-        players.append({'name': name, 'team': team, 'ranking': ranking,
-                        'online_id': online_id, 'platform': platform})
-        if team == 0:
-            team0_players.add(name)
+    players = extract_player_info_from_metadata(replay_json)
+    for player in players:
+        if player['team'] == 0:
+            team0_players.add(player['name'])
         else:
-            team1_players.add(name)
+            team1_players.add(player['name'])
+
     if len(team0_players) == 0:
         team0_players = None
-    if len(team1_players) == 1:
+    if len(team1_players) == 0:
         team1_players = None
-        
+
     dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
     table = dynamodb.Table('turbo-carnival')
     try:
-        resp = table.put_item(
-            Item={
+        data={
                 'replay_key': replay_key,
                 'team_size': team_size,
                 'team0_score': team0_score,
@@ -162,7 +169,7 @@ def put_metadata_in_dynamo(replay_json):
                 'team0_players': team0_players,
                 'team1_players': team1_players
             }
-        )
+        resp = table.put_item(Item=data)
     except:
         traceback.print_exc(file=sys.stderr)
 
@@ -193,6 +200,7 @@ def parse():
     replay_json = json.load(sys.stdin)
 
     put_metadata_in_dynamo(replay_json)
+    players = extract_player_info_from_metadata(replay_json)
     
     # actor_id -> actor
     actors = {}
@@ -218,7 +226,7 @@ def parse():
         this_frame_positions = []
 
         if not frame.get('Updated') == None:
-            process_updates(actor_cars, player_names, team_actor_player, frame['Updated'])
+            process_updates(actor_cars, player_names, team_actor_player, frame['Updated'], players, player_teams)
 
         if not frame.get('Spawned') == None:
             for actor_id, value in frame['Spawned'].items():

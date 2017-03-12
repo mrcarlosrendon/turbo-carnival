@@ -154,7 +154,8 @@
 	 var last_scorer_text = d3.select("#last_scorer");
 	 var watching_text = d3.select("#watching");
 	 watching_text.html("Watching: " + cameraFocus);
-	 var frame_data;
+	 // {frame -> [item1, item2]}
+	 var frame_dict = {};
 	 var frame_by_frame_mode = false;
 
 
@@ -321,9 +322,36 @@ Hold <- ->  forward or back to last keyframe
 	     geometries[id] = sphere;
 	     scene.add( sphere );     
 	 }
+
+	 function preProcessFrameDictionary(data) {
+	     var localFrame = 0;
+	     for (var item in data) {
+		 if (localFrame === 900) {
+		     console.log("1000");
+		 }
+		 var itemFrame = parseInt(data[item].frame);
+		 var process = false;
+		 if (itemFrame == localFrame) {
+		     process = true;
+		 }
+		 else if (itemFrame > localFrame) {
+		     localFrame = itemFrame;
+		     process = true;
+		     if (localFrame % 100 == 0) {
+			 console.log("process " + localFrame);
+		     }
+		 }
+		 if (process) {
+		     if (frame_dict[localFrame] === undefined) {
+			 frame_dict[localFrame] = [];
+		     }
+		     frame_dict[localFrame].push(data[item]);
+		 }
+	     }
+	 }
 	 
 	 function draw(data) {
-	     frame_data = data;
+	     preProcessFrameDictionary(data);
 	     max_frame = d3.max(data, function(d) { return parseInt(d.frame) });	     
 	     renderer.setSize( window.innerWidth - 5, window.innerHeight - 5);
 	     document.body.appendChild( renderer.domElement );
@@ -347,65 +375,65 @@ Hold <- ->  forward or back to last keyframe
 	 
 	 function render() {
 	     requestAnimationFrame( render );
-
 	     var items_in_frame = {}
-	     for(var item in frame_data) {
-		 // Yes I know, super inefficent
-		 if (frame_data[item].frame == frame) {
-		     var datum = frame_data[item];
-		     items_in_frame[datum.id] = true;
-		     var obj = geometries[datum.id];
-		     if (obj !== undefined) {
-			 obj.position.set(parseInt(datum.x), parseInt(datum.y), parseInt(datum.z));
-			 obj.rotation.set(parseFloat(datum.yaw)*Math.PI, parseFloat(datum.roll)*Math.PI, parseFloat(datum.pitch)*Math.PI);
-			 if (datum.id === cameraFocus) {
-			     if (watchTopOfBallMode) {
-				 camera.position.set(obj.position.x + cameraDistance, obj.position.y + cameraDistance, obj.position.z + cameraDistance);
-				 camera.lookAt(obj.position);
-				 //console.log("obj " + obj.position.toArray() + " camera " + camera.position.toArray()); 
-				 //camera.rotation.set(0, 0, 0);
-			     }
-			     else if (watchBallCenterMode) {
-				 obj.updateMatrix();
-				 var mat = obj.matrix.clone();
-				 var pos = new THREE.Vector3();
-				 var rot = new THREE.Quaternion();
-				 var scale = new THREE.Vector3();
-				 mat.decompose(pos, rot, scale);
-				 camera.position.setFromMatrixPosition(mat);
-				 camera.setRotationFromQuaternion(rot);
-				 camera.translateZ(cameraDistance);
-			     }
+	     var frame_data = frame_dict[frame];
+	     if (frame_data === undefined) {
+		 frame_data = [];
+	     }
+	     for(var obj_index in frame_data) {
+		 var datum = frame_data[obj_index];
+		 items_in_frame[datum.id] = true;
+		 var obj = geometries[datum.id];
+		 if (obj !== undefined) {
+		     obj.position.set(parseInt(datum.x), parseInt(datum.y), parseInt(datum.z));
+		     obj.rotation.set(parseFloat(datum.yaw)*Math.PI, parseFloat(datum.roll)*Math.PI, parseFloat(datum.pitch)*Math.PI);
+		     if (datum.id === cameraFocus) {
+			 if (watchTopOfBallMode) {
+			     camera.position.set(obj.position.x + cameraDistance, obj.position.y + cameraDistance, obj.position.z + cameraDistance);
+			     camera.lookAt(obj.position);
+			     //console.log("obj " + obj.position.toArray() + " camera " + camera.position.toArray()); 
+			     //camera.rotation.set(0, 0, 0);
 			 }
-		     }
-		     else {
-			 if (datum.id === 'ball') {
-			     createBall(datum.id);
+			 else if (watchBallCenterMode) {
+			     obj.updateMatrix();
+			     var mat = obj.matrix.clone();
+			     var pos = new THREE.Vector3();
+			     var rot = new THREE.Quaternion();
+			     var scale = new THREE.Vector3();
+			     mat.decompose(pos, rot, scale);
+			     camera.position.setFromMatrixPosition(mat);
+			     camera.setRotationFromQuaternion(rot);
+			     camera.translateZ(cameraDistance);
 			 }
-			 else {
-			     createPlayerCar(datum.id, datum.team);
-			 }
-			 console.log("Created: " + datum.id);
-		     }
-
-		     if (datum['scorer'] !== '') {
-			 last_scorer_text.html("Last Scorer: " + datum['scorer']);
-			 blue_score_text.html(datum['team1score']);
-			 orange_score_text.html(datum['team2score']);
 		     }
 		 }
+		 else {
+		     if (datum.id === 'ball') {
+			 createBall(datum.id);
+		     }
+		     else {
+			 createPlayerCar(datum.id, datum.team);
+		     }
+		     console.log("Created: " + datum.id);
+		 }
+		 
+		 if (datum['scorer'] !== '') {
+		     last_scorer_text.html("Last Scorer: " + datum['scorer']);
+		     blue_score_text.html(datum['team1score']);
+		     orange_score_text.html(datum['team2score']);
+		 }
 	     }
-
+		 
 	     for (var geo in geometries) {
 		 if (!(geo in items_in_frame)) {
 		     scene.remove(geo);
 		     // console.log("Removed " + geo);
 		 }
 	     }
-
+	     
 	     if (frame_by_frame_mode) {
-
-
+		 
+		 
 	     }
 	     else if (frame % 30 === 0) {
 		 var secs = frame/30;

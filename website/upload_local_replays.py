@@ -11,7 +11,7 @@ import boto3
 DYNAMO = boto3.resource("dynamodb")
 TABLE = DYNAMO.Table('turbo-carnival')
 
-REPLAY_DIR = "C:\Users\Carlos\Documents\My Games\Rocket League\TAGame\Demos"
+REPLAY_DIR = os.path.expanduser("~") + "\Documents\My Games\Rocket League\TAGame\Demos"
 
 def getReplay(replay_dir, replay_filename):
     """ Grabs an individual replay and posts to turbo-carnival"""
